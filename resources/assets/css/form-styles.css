@@ -1,0 +1,675 @@
+/**
+ * Wink View Generator - Enhanced Form Styles
+ * 
+ * Advanced form styling with loading states, animations, and micro-interactions
+ * 
+ * Features:
+ * - Enhanced form layouts and styling
+ * - Loading states and indicators
+ * - File upload components
+ * - Form validation styling
+ * - Auto-save indicators
+ * - Mobile-optimized inputs
+ * 
+ * @version 2.0.0
+ */
+
+/* Form wrapper and layout */
+.wink-form {
+  position: relative;
+}
+
+.wink-form-initialized {
+  /* Styles applied when FormHandler is initialized */
+}
+
+.wink-form-loading {
+  pointer-events: none;
+}
+
+.wink-form-loading .wink-form-control {
+  opacity: 0.7;
+}
+
+.wink-form-dirty::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px dashed var(--wink-warning);
+  border-radius: var(--wink-border-radius);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Enhanced form groups */
+.wink-form-group {
+  position: relative;
+  margin-bottom: var(--wink-spacing-lg);
+}
+
+.wink-form-group.wink-field-focused .wink-form-label {
+  color: var(--wink-primary);
+  transform: scale(0.9);
+}
+
+.wink-form-group.wink-field-focused .wink-form-control {
+  border-color: var(--wink-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+}
+
+/* Floating labels */
+.wink-form-floating {
+  position: relative;
+}
+
+.wink-form-floating > .wink-form-control {
+  height: calc(3.5rem + 2px);
+  line-height: 1.25;
+  padding: 1rem 0.75rem 0.25rem;
+}
+
+.wink-form-floating > .wink-form-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  padding: 1rem 0.75rem;
+  pointer-events: none;
+  border: 1px solid transparent;
+  transform-origin: 0 0;
+  transition: var(--wink-transition);
+  color: var(--wink-text-secondary);
+  margin-bottom: 0;
+}
+
+.wink-form-floating > .wink-form-control:focus ~ .wink-form-label,
+.wink-form-floating > .wink-form-control:not(:placeholder-shown) ~ .wink-form-label {
+  opacity: 0.65;
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.wink-form-floating > .wink-form-control:focus ~ .wink-form-label {
+  color: var(--wink-primary);
+}
+
+/* Enhanced form controls */
+.wink-form-control {
+  position: relative;
+}
+
+.wink-form-control:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1), 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.wink-form-control:disabled {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2px,
+    var(--wink-bg-tertiary) 2px,
+    var(--wink-bg-tertiary) 4px
+  );
+}
+
+/* Input states and animations */
+.wink-form-control.wink-loading {
+  background-image: linear-gradient(90deg, var(--wink-bg-secondary) 0%, var(--wink-bg-tertiary) 50%, var(--wink-bg-secondary) 100%);
+  background-size: 200% 100%;
+  animation: wink-input-loading 1.5s infinite;
+}
+
+@keyframes wink-input-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.wink-form-control.wink-has-success {
+  border-color: var(--wink-success);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 0.2rem rgba(40, 167, 69, 0.1);
+}
+
+.wink-form-control.wink-has-warning {
+  border-color: var(--wink-warning);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 0.2rem rgba(255, 193, 7, 0.1);
+}
+
+/* File upload enhancements */
+.wink-file-upload-wrapper {
+  position: relative;
+  margin-bottom: var(--wink-spacing-md);
+}
+
+.wink-file-drop-zone {
+  border: 2px dashed var(--wink-border-color);
+  border-radius: var(--wink-border-radius);
+  padding: var(--wink-spacing-xl);
+  text-align: center;
+  transition: var(--wink-transition);
+  background-color: var(--wink-bg-secondary);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.wink-file-drop-zone:hover {
+  border-color: var(--wink-primary);
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+.wink-file-drop-zone.wink-file-drag-over {
+  border-color: var(--wink-primary);
+  background-color: rgba(0, 123, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.wink-file-upload-icon {
+  color: var(--wink-text-secondary);
+  margin-bottom: var(--wink-spacing-sm);
+  transition: var(--wink-transition);
+}
+
+.wink-file-drop-zone:hover .wink-file-upload-icon {
+  color: var(--wink-primary);
+  transform: scale(1.1);
+}
+
+.wink-file-drop-text {
+  font-weight: 500;
+  color: var(--wink-text-primary);
+  margin: var(--wink-spacing-sm) 0;
+}
+
+.wink-file-drop-hint {
+  font-size: var(--wink-font-size-sm);
+  color: var(--wink-text-secondary);
+  margin: 0;
+}
+
+.wink-file-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--wink-bg-tertiary);
+  border-radius: 0 0 var(--wink-border-radius) var(--wink-border-radius);
+  overflow: hidden;
+}
+
+.wink-file-progress-bar {
+  height: 100%;
+  background-color: var(--wink-primary);
+  transition: width 0.3s ease;
+  border-radius: inherit;
+}
+
+.wink-file-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--wink-font-size-xs);
+  color: var(--wink-text-white);
+  font-weight: 500;
+}
+
+/* File list */
+.wink-file-list {
+  margin-top: var(--wink-spacing-md);
+}
+
+.wink-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--wink-spacing-sm);
+  border: 1px solid var(--wink-border-color);
+  border-radius: var(--wink-border-radius);
+  margin-bottom: var(--wink-spacing-xs);
+  background-color: var(--wink-bg-primary);
+  transition: var(--wink-transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.wink-file-item:hover {
+  border-color: var(--wink-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--wink-shadow-sm);
+}
+
+.wink-file-item.wink-file-uploaded {
+  border-color: var(--wink-success);
+  background-color: rgba(40, 167, 69, 0.05);
+}
+
+.wink-file-item.wink-file-error {
+  border-color: var(--wink-danger);
+  background-color: rgba(220, 53, 69, 0.05);
+}
+
+.wink-file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wink-file-name {
+  font-weight: 500;
+  color: var(--wink-text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wink-file-size {
+  font-size: var(--wink-font-size-sm);
+  color: var(--wink-text-secondary);
+}
+
+.wink-file-actions {
+  display: flex;
+  gap: var(--wink-spacing-xs);
+}
+
+.wink-file-remove {
+  background: none;
+  border: none;
+  color: var(--wink-text-secondary);
+  cursor: pointer;
+  padding: var(--wink-spacing-xs);
+  border-radius: var(--wink-border-radius-sm);
+  transition: var(--wink-transition);
+  font-size: 1.25rem;
+  line-height: 1;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wink-file-remove:hover {
+  background-color: var(--wink-danger);
+  color: var(--wink-text-white);
+}
+
+/* Form validation styling */
+.wink-form-group.wink-has-error .wink-form-label {
+  color: var(--wink-danger);
+}
+
+.wink-form-group.wink-has-error .wink-form-control {
+  border-color: var(--wink-danger);
+  animation: wink-shake 0.5s ease-in-out;
+}
+
+@keyframes wink-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+.wink-form-group.wink-has-success .wink-form-label {
+  color: var(--wink-success);
+}
+
+.wink-form-group.wink-has-success .wink-form-control {
+  border-color: var(--wink-success);
+}
+
+/* Auto-save indicators */
+.wink-unsaved-indicator {
+  position: fixed;
+  bottom: var(--wink-spacing-md);
+  left: var(--wink-spacing-md);
+  background-color: var(--wink-warning);
+  color: var(--wink-text-white);
+  padding: var(--wink-spacing-xs) var(--wink-spacing-sm);
+  border-radius: var(--wink-border-radius);
+  font-size: var(--wink-font-size-sm);
+  font-weight: 500;
+  z-index: var(--wink-z-toast);
+  box-shadow: var(--wink-shadow);
+  animation: wink-bounce-in 0.3s ease-out;
+}
+
+.wink-autosave-indicator {
+  position: fixed;
+  bottom: var(--wink-spacing-md);
+  left: var(--wink-spacing-md);
+  background-color: var(--wink-success);
+  color: var(--wink-text-white);
+  padding: var(--wink-spacing-xs) var(--wink-spacing-sm);
+  border-radius: var(--wink-border-radius);
+  font-size: var(--wink-font-size-sm);
+  font-weight: 500;
+  z-index: var(--wink-z-toast);
+  box-shadow: var(--wink-shadow);
+  animation: wink-fade-in 0.3s ease-out;
+}
+
+@keyframes wink-bounce-in {
+  0% {
+    transform: scale(0.3) translateY(100%);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wink-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced checkboxes and radios */
+.wink-form-check {
+  position: relative;
+  display: block;
+  padding-left: 2rem;
+  margin-bottom: var(--wink-spacing-sm);
+}
+
+.wink-form-check-input {
+  position: absolute;
+  left: 0;
+  z-index: 1;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+  cursor: pointer;
+  background-color: var(--wink-bg-primary);
+  border: 2px solid var(--wink-border-color);
+  transition: var(--wink-transition);
+}
+
+.wink-form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.wink-form-check-input:checked {
+  background-color: var(--wink-primary);
+  border-color: var(--wink-primary);
+  transform: scale(1.1);
+}
+
+.wink-form-check-input:active {
+  transform: scale(0.95);
+}
+
+.wink-form-check-label {
+  position: relative;
+  cursor: pointer;
+  font-size: var(--wink-font-size-base);
+  line-height: 1.5;
+  color: var(--wink-text-primary);
+  transition: var(--wink-transition);
+}
+
+.wink-form-check:hover .wink-form-check-label {
+  color: var(--wink-primary);
+}
+
+/* Switch toggle */
+.wink-form-switch {
+  padding-left: 2.5rem;
+}
+
+.wink-form-switch .wink-form-check-input {
+  width: 2rem;
+  height: 1rem;
+  border-radius: 0.5rem;
+  background-image: none;
+  background-color: var(--wink-bg-tertiary);
+  border: 1px solid var(--wink-border-color);
+  transition: var(--wink-transition);
+}
+
+.wink-form-switch .wink-form-check-input:focus {
+  background-color: var(--wink-bg-tertiary);
+  border-color: var(--wink-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.wink-form-switch .wink-form-check-input:checked {
+  background-color: var(--wink-primary);
+  border-color: var(--wink-primary);
+}
+
+.wink-form-switch .wink-form-check-input::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: var(--wink-text-white);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  transition: var(--wink-transition);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.wink-form-switch .wink-form-check-input:checked::before {
+  transform: translateY(-50%) translateX(0.75rem);
+}
+
+/* Form steps/wizard */
+.wink-form-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--wink-spacing-xl);
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+
+.wink-form-steps::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--wink-border-color);
+  z-index: 0;
+}
+
+.wink-form-step {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  text-align: center;
+}
+
+.wink-form-step-button {
+  background: var(--wink-bg-primary);
+  border: 2px solid var(--wink-border-color);
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--wink-spacing-xs);
+  color: var(--wink-text-secondary);
+  font-weight: 500;
+  transition: var(--wink-transition);
+  cursor: pointer;
+}
+
+.wink-form-step.active .wink-form-step-button,
+.wink-form-step.completed .wink-form-step-button {
+  background-color: var(--wink-primary);
+  border-color: var(--wink-primary);
+  color: var(--wink-text-white);
+}
+
+.wink-form-step.completed .wink-form-step-button::before {
+  content: '✓';
+  font-size: var(--wink-font-size-sm);
+}
+
+.wink-form-step-label {
+  font-size: var(--wink-font-size-sm);
+  color: var(--wink-text-secondary);
+  transition: var(--wink-transition);
+}
+
+.wink-form-step.active .wink-form-step-label,
+.wink-form-step.completed .wink-form-step-label {
+  color: var(--wink-primary);
+  font-weight: 500;
+}
+
+/* Range inputs */
+.wink-form-range {
+  width: 100%;
+  height: 1.5rem;
+  padding: 0;
+  background-color: transparent;
+  appearance: none;
+  cursor: pointer;
+}
+
+.wink-form-range::-webkit-slider-track {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--wink-bg-tertiary);
+  border-radius: var(--wink-border-radius);
+  border: 0;
+}
+
+.wink-form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--wink-primary);
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  transition: var(--wink-transition);
+}
+
+.wink-form-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.wink-form-range::-moz-range-track {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--wink-bg-tertiary);
+  border-radius: var(--wink-border-radius);
+  border: 0;
+}
+
+.wink-form-range::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--wink-primary);
+  border-radius: 50%;
+  border: 0;
+  cursor: pointer;
+  transition: var(--wink-transition);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .wink-form-group {
+    margin-bottom: var(--wink-spacing-md);
+  }
+  
+  .wink-form-control {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+  }
+  
+  .wink-file-drop-zone {
+    padding: var(--wink-spacing-lg);
+  }
+  
+  .wink-form-steps {
+    flex-direction: column;
+    gap: var(--wink-spacing-sm);
+  }
+  
+  .wink-form-steps::before {
+    display: none;
+  }
+  
+  .wink-form-step {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: var(--wink-spacing-sm);
+  }
+  
+  .wink-form-step-button {
+    margin: 0;
+    flex-shrink: 0;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .wink-file-drop-zone {
+    background-color: var(--wink-bg-tertiary);
+  }
+  
+  .wink-file-item {
+    background-color: var(--wink-bg-secondary);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .wink-form-control {
+    border-width: 2px;
+  }
+  
+  .wink-form-check-input {
+    border-width: 2px;
+  }
+  
+  .wink-file-drop-zone {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .wink-form-control:focus {
+    transform: none;
+  }
+  
+  .wink-file-drop-zone.wink-file-drag-over {
+    transform: none;
+  }
+  
+  .wink-form-check-input:checked {
+    transform: none;
+  }
+  
+  .wink-form-group.wink-has-error .wink-form-control {
+    animation: none;
+  }
+}

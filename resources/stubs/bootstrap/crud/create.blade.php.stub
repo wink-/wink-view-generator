@@ -1,0 +1,926 @@
+@extends('layouts.{{layout}}')
+
+@section('title', 'Create {{modelNameSingular}}')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Create {{modelNameSingular}}</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('{{routeName}}.index') }}">{{modelNamePlural}}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Create</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Validation Errors -->
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Please correct the following errors:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <div class="row">
+                <!-- Main Form -->
+                <div class="col-lg-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-white border-bottom">
+                            <h5 class="card-title mb-0">
+                                <i class="bi bi-{{iconName}} me-2"></i>
+                                {{modelNameSingular}} Information
+                            </h5>
+                        </div>
+                        
+                        <form action="{{ route('{{routeName}}.store') }}" 
+                              method="POST" 
+                              enctype="multipart/form-data"
+                              id="{{modelNameSingularLower}}-form"
+                              novalidate>
+                            @csrf
+                            
+                            <div class="card-body">
+                                <div class="row g-4">
+                                    {{#formFields}}
+                                    <div class="col-md-{{colSize}}">
+                                        @include('components.form-field', [
+                                            'name' => '{{name}}',
+                                            'label' => '{{label}}',
+                                            'type' => '{{type}}',
+                                            'value' => old('{{name}}', {{defaultValue}}),
+                                            'required' => {{required}},
+                                            'placeholder' => '{{placeholder}}',
+                                            'help' => '{{helpText}}',
+                                            'options' => {{options}},
+                                            'attributes' => {{attributes}}
+                                        ])
+                                    </div>
+                                    {{/formFields}}
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-light">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                                <i class="bi bi-check-lg me-1"></i>
+                                                <span class="btn-text">Create {{modelNameSingular}}</span>
+                                                <span class="spinner-border spinner-border-sm ms-1 d-none" role="status" aria-hidden="true"></span>
+                                            </button>
+                                            
+                                            <button type="submit" 
+                                                    name="action" 
+                                                    value="save_and_continue"
+                                                    class="btn btn-success">
+                                                <i class="bi bi-plus-lg me-1"></i>
+                                                Save & Add Another
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <div class="d-flex gap-2 justify-content-md-end">
+                                            <button type="button" 
+                                                    class="btn btn-outline-secondary"
+                                                    onclick="resetForm()">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                                Reset Form
+                                            </button>
+                                            
+                                            <a href="{{ route('{{routeName}}.index') }}" 
+                                               class="btn btn-outline-danger">
+                                                <i class="bi bi-x-lg me-1"></i>
+                                                Cancel
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Help Card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-question-circle me-2"></i>
+                                Help & Tips
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Required Fields</h6>
+                                <p class="small text-muted mb-0">
+                                    Fields marked with <span class="text-danger">*</span> are required and must be filled out before you can save.
+                                </p>
+                            </div>
+                            
+                            {{#helpSections}}
+                            <div class="mb-3">
+                                <h6 class="fw-bold">{{title}}</h6>
+                                <p class="small text-muted mb-0">{{description}}</p>
+                            </div>
+                            {{/helpSections}}
+                            
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                You can save your progress at any time and continue editing later.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Validation Status -->
+                    <div class="card shadow mb-4 d-none" id="validation-status">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Form Status
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div id="validation-summary">
+                                <!-- Validation status will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Related Data -->
+                    {{#relatedData}}
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-{{icon}} me-2"></i>
+                                {{title}}
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="small">
+                                <p class="text-muted mb-2">{{description}}</p>
+                                @can('create', {{relatedModelClass}}::class)
+                                    <a href="{{ route('{{relatedRoute}}.create') }}" 
+                                       class="btn btn-outline-primary btn-sm"
+                                       target="_blank">
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create {{relatedModelSingular}}
+                                    </a>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+                    {{/relatedData}}
+
+                    <!-- Auto-save Status -->
+                    <div class="card shadow">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-cloud me-2"></i>
+                                Auto-save
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="auto-save-toggle"
+                                       checked>
+                                <label class="form-check-label small" for="auto-save-toggle">
+                                    Enable auto-save
+                                </label>
+                            </div>
+                            <div id="auto-save-status" class="small text-muted mt-2">
+                                Auto-save is enabled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unsaved Changes Modal -->
+<div class="modal fade" id="unsavedChangesModal" tabindex="-1" aria-labelledby="unsavedChangesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unsavedChangesModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Unsaved Changes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You have unsaved changes. Are you sure you want to leave without saving?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stay</button>
+                <button type="button" class="btn btn-primary" onclick="saveForm()">Save & Continue</button>
+                <button type="button" class="btn btn-danger" id="leave-anyway">Leave Anyway</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Draft Saved Modal -->
+<div class="modal fade" id="draftSavedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle text-success display-4"></i>
+                <p class="mt-2 mb-0">Draft saved successfully!</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('styles')
+<style>
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.is-valid {
+    border-color: #198754;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+.valid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #198754;
+}
+
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+}
+
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+}
+
+.drag-drop-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.drag-drop-zone:hover,
+.drag-drop-zone.drag-over {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.character-count {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-align: right;
+}
+
+.character-count.warning {
+    color: #fd7e14;
+}
+
+.character-count.danger {
+    color: #dc3545;
+}
+
+.field-group {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa;
+}
+
+.field-group .field-group-title {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .card-footer .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .card-footer .d-flex {
+        flex-direction: column;
+    }
+    
+    .card-footer .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('{{modelNameSingularLower}}-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const autoSaveToggle = document.getElementById('auto-save-toggle');
+    const autoSaveStatus = document.getElementById('auto-save-status');
+    
+    let formChanged = false;
+    let autoSaveInterval;
+    let lastSavedData = {};
+
+    // Initialize form
+    initializeForm();
+    setupValidation();
+    setupAutoSave();
+    setupUnsavedChangesWarning();
+
+    function initializeForm() {
+        // Load any saved draft data
+        loadDraftData();
+        
+        // Setup file upload previews
+        setupFileUploads();
+        
+        // Setup character counters
+        setupCharacterCounters();
+        
+        // Setup dependent fields
+        setupDependentFields();
+    }
+
+    function setupValidation() {
+        // Real-time validation
+        form.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('blur', function() {
+                validateField(this);
+            });
+            
+            field.addEventListener('input', function() {
+                formChanged = true;
+                clearFieldError(this);
+                
+                // Debounced validation
+                clearTimeout(this.validationTimeout);
+                this.validationTimeout = setTimeout(() => {
+                    validateField(this);
+                }, 500);
+            });
+        });
+
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                submitForm(this);
+            }
+        });
+    }
+
+    function validateField(field) {
+        const fieldName = field.name;
+        const value = field.value.trim();
+        const isRequired = field.hasAttribute('required');
+        
+        // Clear previous validation state
+        field.classList.remove('is-valid', 'is-invalid');
+        
+        // Basic required validation
+        if (isRequired && !value) {
+            showFieldError(field, 'This field is required');
+            return false;
+        }
+        
+        // Type-specific validation
+        switch (field.type) {
+            case 'email':
+                if (value && !isValidEmail(value)) {
+                    showFieldError(field, 'Please enter a valid email address');
+                    return false;
+                }
+                break;
+                
+            case 'url':
+                if (value && !isValidUrl(value)) {
+                    showFieldError(field, 'Please enter a valid URL');
+                    return false;
+                }
+                break;
+                
+            case 'tel':
+                if (value && !isValidPhone(value)) {
+                    showFieldError(field, 'Please enter a valid phone number');
+                    return false;
+                }
+                break;
+                
+            case 'number':
+                const min = field.getAttribute('min');
+                const max = field.getAttribute('max');
+                const numValue = parseFloat(value);
+                
+                if (value && isNaN(numValue)) {
+                    showFieldError(field, 'Please enter a valid number');
+                    return false;
+                }
+                
+                if (min && numValue < parseFloat(min)) {
+                    showFieldError(field, `Value must be at least ${min}`);
+                    return false;
+                }
+                
+                if (max && numValue > parseFloat(max)) {
+                    showFieldError(field, `Value must be no more than ${max}`);
+                    return false;
+                }
+                break;
+        }
+        
+        // Pattern validation
+        const pattern = field.getAttribute('pattern');
+        if (pattern && value && !new RegExp(pattern).test(value)) {
+            const title = field.getAttribute('title') || 'Invalid format';
+            showFieldError(field, title);
+            return false;
+        }
+        
+        // Custom validation
+        const customValidation = window[`validate${capitalize(fieldName)}`];
+        if (typeof customValidation === 'function') {
+            const result = customValidation(value, field);
+            if (result !== true) {
+                showFieldError(field, result);
+                return false;
+            }
+        }
+        
+        // Show success state
+        showFieldSuccess(field);
+        return true;
+    }
+
+    function validateForm() {
+        let isValid = true;
+        const fields = form.querySelectorAll('input, select, textarea');
+        
+        fields.forEach(field => {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+        
+        // Focus first invalid field
+        if (!isValid) {
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        return isValid;
+    }
+
+    function submitForm(form) {
+        // Show loading state
+        const spinner = submitBtn.querySelector('.spinner-border');
+        const btnText = submitBtn.querySelector('.btn-text');
+        
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Creating...';
+        
+        // Submit form
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                formChanged = false;
+                clearDraftData();
+                
+                showAlert('success', data.message || '{{modelNameSingular}} created successfully');
+                
+                // Redirect based on action
+                const action = form.querySelector('[name="action"]:checked')?.value || 
+                              (event.submitter && event.submitter.value) || 'default';
+                
+                setTimeout(() => {
+                    if (action === 'save_and_continue') {
+                        location.reload();
+                    } else {
+                        window.location.href = data.redirect || '{{ route('{{routeName}}.index') }}';
+                    }
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', error.message || 'An error occurred while creating the {{modelNameSingular}}');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Create {{modelNameSingular}}';
+        });
+    }
+
+    function setupAutoSave() {
+        if (autoSaveToggle.checked) {
+            startAutoSave();
+        }
+        
+        autoSaveToggle.addEventListener('change', function() {
+            if (this.checked) {
+                startAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is enabled';
+                autoSaveStatus.className = 'small text-success mt-2';
+            } else {
+                stopAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is disabled';
+                autoSaveStatus.className = 'small text-muted mt-2';
+            }
+        });
+    }
+
+    function startAutoSave() {
+        autoSaveInterval = setInterval(() => {
+            if (formChanged) {
+                saveDraft();
+            }
+        }, 30000); // Save every 30 seconds
+    }
+
+    function stopAutoSave() {
+        if (autoSaveInterval) {
+            clearInterval(autoSaveInterval);
+        }
+    }
+
+    function saveDraft() {
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Only save if data has changed
+        if (JSON.stringify(data) !== JSON.stringify(lastSavedData)) {
+            localStorage.setItem('{{modelNameSingularLower}}_create_draft', JSON.stringify(data));
+            lastSavedData = data;
+            formChanged = false;
+            
+            autoSaveStatus.textContent = 'Draft saved ' + new Date().toLocaleTimeString();
+            autoSaveStatus.className = 'small text-success mt-2';
+            
+            // Show brief confirmation
+            showDraftSavedModal();
+        }
+    }
+
+    function loadDraftData() {
+        const draftData = localStorage.getItem('{{modelNameSingularLower}}_create_draft');
+        if (draftData) {
+            try {
+                const data = JSON.parse(draftData);
+                
+                // Only load if form is empty
+                const hasData = Array.from(form.elements).some(el => 
+                    el.type !== 'hidden' && el.type !== 'submit' && el.value.trim()
+                );
+                
+                if (!hasData) {
+                    Object.entries(data).forEach(([key, value]) => {
+                        const field = form.querySelector(`[name="${key}"]`);
+                        if (field && field.type !== 'file') {
+                            field.value = value;
+                        }
+                    });
+                    
+                    showAlert('info', 'Draft data has been restored');
+                }
+            } catch (e) {
+                console.error('Error loading draft data:', e);
+            }
+        }
+    }
+
+    function clearDraftData() {
+        localStorage.removeItem('{{modelNameSingularLower}}_create_draft');
+    }
+
+    function setupUnsavedChangesWarning() {
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        // Handle navigation links
+        document.querySelectorAll('a[href]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (formChanged && !this.href.includes('#')) {
+                    e.preventDefault();
+                    const unsavedModal = new bootstrap.Modal(document.getElementById('unsavedChangesModal'));
+                    unsavedModal.show();
+                    
+                    document.getElementById('leave-anyway').onclick = () => {
+                        formChanged = false;
+                        window.location.href = this.href;
+                    };
+                }
+            });
+        });
+    }
+
+    function setupFileUploads() {
+        form.querySelectorAll('input[type="file"]').forEach(fileInput => {
+            setupFileUpload(fileInput);
+        });
+    }
+
+    function setupFileUpload(fileInput) {
+        const previewContainer = fileInput.parentNode.querySelector('.file-preview');
+        
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && previewContainer) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = `
+                            <img src="${e.target.result}" class="preview-image" alt="Preview">
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="clearFilePreview(this)">
+                                <i class="bi bi-x-lg"></i> Remove
+                            </button>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewContainer.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <span>${file.name}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="clearFilePreview(this)">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+    }
+
+    function setupCharacterCounters() {
+        form.querySelectorAll('textarea[maxlength], input[maxlength]').forEach(field => {
+            const maxLength = parseInt(field.getAttribute('maxlength'));
+            if (maxLength) {
+                const counter = document.createElement('div');
+                counter.className = 'character-count';
+                field.parentNode.appendChild(counter);
+                
+                function updateCounter() {
+                    const remaining = maxLength - field.value.length;
+                    counter.textContent = `${field.value.length}/${maxLength} characters`;
+                    
+                    counter.className = 'character-count';
+                    if (remaining < maxLength * 0.1) {
+                        counter.classList.add('danger');
+                    } else if (remaining < maxLength * 0.2) {
+                        counter.classList.add('warning');
+                    }
+                }
+                
+                field.addEventListener('input', updateCounter);
+                updateCounter();
+            }
+        });
+    }
+
+    function setupDependentFields() {
+        // Setup cascading dropdowns and dependent field logic
+        {{#dependentFields}}
+        const {{parentField}} = form.querySelector('[name="{{parentField}}"]');
+        const {{childField}} = form.querySelector('[name="{{childField}}"]');
+        
+        if ({{parentField}} && {{childField}}) {
+            {{parentField}}.addEventListener('change', function() {
+                updateDependentField('{{parentField}}', '{{childField}}', this.value);
+            });
+        }
+        {{/dependentFields}}
+    }
+
+    function updateDependentField(parentField, childField, parentValue) {
+        const childSelect = form.querySelector(`[name="${childField}"]`);
+        if (!childSelect) return;
+        
+        // Show loading state
+        childSelect.disabled = true;
+        childSelect.innerHTML = '<option>Loading...</option>';
+        
+        // Fetch dependent options
+        fetch(`/api/dependent-options/${parentField}/${childField}/${parentValue}`)
+            .then(response => response.json())
+            .then(data => {
+                childSelect.innerHTML = '<option value="">Choose...</option>';
+                data.forEach(option => {
+                    childSelect.innerHTML += `<option value="${option.value}">${option.label}</option>`;
+                });
+                childSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading dependent options:', error);
+                childSelect.innerHTML = '<option value="">Error loading options</option>';
+                childSelect.disabled = false;
+            });
+    }
+
+    // Helper functions
+    function showFieldError(field, message) {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        
+        let feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            field.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+    }
+
+    function showFieldSuccess(field) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidUrl(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function isValidPhone(phone) {
+        return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function showDraftSavedModal() {
+        const modal = new bootstrap.Modal(document.getElementById('draftSavedModal'));
+        modal.show();
+        setTimeout(() => modal.hide(), 2000);
+    }
+});
+
+// Global functions
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+        document.getElementById('{{modelNameSingularLower}}-form').reset();
+        
+        // Clear validation states
+        document.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+            el.classList.remove('is-valid', 'is-invalid');
+        });
+        
+        // Clear file previews
+        document.querySelectorAll('.file-preview').forEach(preview => {
+            preview.innerHTML = '';
+        });
+        
+        formChanged = false;
+        showAlert('info', 'Form has been reset');
+    }
+}
+
+function saveForm() {
+    document.getElementById('{{modelNameSingularLower}}-form').dispatchEvent(new Event('submit'));
+}
+
+function clearFilePreview(button) {
+    const preview = button.closest('.file-preview');
+    const fileInput = preview.parentNode.querySelector('input[type="file"]');
+    
+    preview.innerHTML = '';
+    fileInput.value = '';
+    formChanged = true;
+}
+
+// Alert helper
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            bootstrap.Alert.getInstance(alertDiv)?.close();
+        }
+    }, 5000);
+}
+</script>
+@endpush

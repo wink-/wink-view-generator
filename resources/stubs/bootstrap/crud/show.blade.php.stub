@@ -1,0 +1,684 @@
+@extends('layouts.{{layout}}')
+
+@section('title', '{{modelNameSingular}} Details')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">{{modelNameSingular}} Details</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('{{routeName}}.index') }}">{{modelNamePlural}}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ ${{modelNameSingularLower}}->{{displayField}} }}</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Alerts -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <div class="row">
+                <!-- Main Details -->
+                <div class="col-lg-8">
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-{{iconName}} me-2"></i>
+                                        {{modelNameSingular}} Information
+                                    </h5>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="btn-group" role="group" aria-label="Actions">
+                                        @can('update', ${{modelNameSingularLower}})
+                                            <a href="{{ route('{{routeName}}.edit', ${{modelNameSingularLower}}) }}" 
+                                               class="btn btn-warning btn-sm"
+                                               aria-label="Edit {{modelNameSingular}}">
+                                                <i class="bi bi-pencil me-1"></i>
+                                                Edit
+                                            </a>
+                                        @endcan
+                                        
+                                        @can('delete', ${{modelNameSingularLower}})
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm"
+                                                    onclick="confirmDelete()"
+                                                    aria-label="Delete {{modelNameSingular}}">
+                                                <i class="bi bi-trash me-1"></i>
+                                                Delete
+                                            </button>
+                                        @endcan
+                                        
+                                        <a href="{{ route('{{routeName}}.index') }}" 
+                                           class="btn btn-secondary btn-sm"
+                                           aria-label="Back to {{modelNamePlural}} list">
+                                            <i class="bi bi-arrow-left me-1"></i>
+                                            Back to List
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="row g-4">
+                                {{#detailFields}}
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small text-uppercase fw-bold">{{label}}</label>
+                                        <div class="form-control-plaintext">
+                                            @if('{{type}}' === 'image')
+                                                @if(${{modelNameSingularLower}}->{{name}})
+                                                    <img src="{{ asset(${{modelNameSingularLower}}->{{name}}) }}" 
+                                                         alt="{{label}}" 
+                                                         class="img-thumbnail"
+                                                         style="max-width: 200px; max-height: 200px; object-fit: cover;"
+                                                         data-bs-toggle="modal" 
+                                                         data-bs-target="#imageModal"
+                                                         data-image-src="{{ asset(${{modelNameSingularLower}}->{{name}}) }}"
+                                                         style="cursor: pointer;">
+                                                @else
+                                                    <div class="text-muted">
+                                                        <i class="bi bi-image me-1"></i>
+                                                        No image uploaded
+                                                    </div>
+                                                @endif
+                                            @elseif('{{type}}' === 'file')
+                                                @if(${{modelNameSingularLower}}->{{name}})
+                                                    <a href="{{ asset(${{modelNameSingularLower}}->{{name}}) }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-download me-1"></i>
+                                                        Download File
+                                                    </a>
+                                                @else
+                                                    <div class="text-muted">
+                                                        <i class="bi bi-file me-1"></i>
+                                                        No file uploaded
+                                                    </div>
+                                                @endif
+                                            @elseif('{{type}}' === 'status')
+                                                <span class="badge bg-{{ ${{modelNameSingularLower}}->{{name}} == 'active' ? 'success' : (${{modelNameSingularLower}}->{{name}} == 'inactive' ? 'secondary' : 'warning') }} fs-6">
+                                                    {{ ucfirst(${{modelNameSingularLower}}->{{name}}) }}
+                                                </span>
+                                            @elseif('{{type}}' === 'boolean')
+                                                <span class="badge bg-{{ ${{modelNameSingularLower}}->{{name}} ? 'success' : 'secondary' }} fs-6">
+                                                    <i class="bi bi-{{ ${{modelNameSingularLower}}->{{name}} ? 'check' : 'x' }} me-1"></i>
+                                                    {{ ${{modelNameSingularLower}}->{{name}} ? 'Yes' : 'No' }}
+                                                </span>
+                                            @elseif('{{type}}' === 'date')
+                                                <div>
+                                                    {{ ${{modelNameSingularLower}}->{{name}}?->format('F d, Y') }}
+                                                    @if(${{modelNameSingularLower}}->{{name}})
+                                                        <small class="text-muted d-block">
+                                                            {{ ${{modelNameSingularLower}}->{{name}}->diffForHumans() }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                            @elseif('{{type}}' === 'datetime')
+                                                <div>
+                                                    {{ ${{modelNameSingularLower}}->{{name}}?->format('F d, Y g:i A') }}
+                                                    @if(${{modelNameSingularLower}}->{{name}})
+                                                        <small class="text-muted d-block">
+                                                            {{ ${{modelNameSingularLower}}->{{name}}->diffForHumans() }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                            @elseif('{{type}}' === 'currency')
+                                                <span class="h5 text-success mb-0">
+                                                    ${{ number_format(${{modelNameSingularLower}}->{{name}}, 2) }}
+                                                </span>
+                                            @elseif('{{type}}' === 'email')
+                                                <a href="mailto:{{ ${{modelNameSingularLower}}->{{name}} }}" class="text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>
+                                                    {{ ${{modelNameSingularLower}}->{{name}} }}
+                                                </a>
+                                            @elseif('{{type}}' === 'url')
+                                                <a href="{{ ${{modelNameSingularLower}}->{{name}} }}" 
+                                                   target="_blank" 
+                                                   class="text-decoration-none">
+                                                    <i class="bi bi-link-45deg me-1"></i>
+                                                    {{ Str::limit(${{modelNameSingularLower}}->{{name}}, 50) }}
+                                                </a>
+                                            @elseif('{{type}}' === 'phone')
+                                                <a href="tel:{{ ${{modelNameSingularLower}}->{{name}} }}" class="text-decoration-none">
+                                                    <i class="bi bi-telephone me-1"></i>
+                                                    {{ ${{modelNameSingularLower}}->{{name}} }}
+                                                </a>
+                                            @elseif('{{type}}' === 'text' || '{{type}}' === 'textarea')
+                                                @if(${{modelNameSingularLower}}->{{name}})
+                                                    <div class="border-start border-primary border-3 ps-3">
+                                                        {!! nl2br(e(${{modelNameSingularLower}}->{{name}})) !!}
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">Not provided</span>
+                                                @endif
+                                            @elseif('{{type}}' === 'json')
+                                                @if(${{modelNameSingularLower}}->{{name}})
+                                                    <button class="btn btn-outline-secondary btn-sm" 
+                                                            type="button" 
+                                                            data-bs-toggle="collapse" 
+                                                            data-bs-target="#{{name}}-json" 
+                                                            aria-expanded="false">
+                                                        <i class="bi bi-code me-1"></i>
+                                                        View JSON
+                                                    </button>
+                                                    <div class="collapse mt-2" id="{{name}}-json">
+                                                        <pre class="bg-light p-3 rounded"><code>{{ json_encode(${{modelNameSingularLower}}->{{name}}, JSON_PRETTY_PRINT) }}</code></pre>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">No data</span>
+                                                @endif
+                                            @else
+                                                {{ ${{modelNameSingularLower}}->{{name}} ?: 'Not provided' }}
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/detailFields}}
+                            </div>
+                        </div>
+                    </div>
+
+                    {{#relationships}}
+                    <!-- {{relationshipLabel}} -->
+                    @if(${{modelNameSingularLower}}->{{relationshipName}}->count() > 0 || '{{relationshipType}}' === 'hasMany')
+                        <div class="card shadow mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-{{relationshipIcon}} me-2"></i>
+                                            {{relationshipLabel}}
+                                            <span class="badge bg-primary ms-2">{{ ${{modelNameSingularLower}}->{{relationshipName}}->count() }}</span>
+                                        </h5>
+                                    </div>
+                                    @if('{{relationshipType}}' === 'hasMany')
+                                        <div class="col-auto">
+                                            @can('create', {{relatedModelClass}}::class)
+                                                <a href="{{ route('{{relatedRouteName}}.create', ['{{foreignKey}}' => ${{modelNameSingularLower}}->{{primaryKey}}]) }}" 
+                                                   class="btn btn-primary btn-sm">
+                                                    <i class="bi bi-plus-lg me-1"></i>
+                                                    Add {{relatedModelSingular}}
+                                                </a>
+                                            @endcan
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-0">
+                                @if(${{modelNameSingularLower}}->{{relationshipName}}->count() > 0)
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    {{#relatedTableFields}}
+                                                    <th scope="col">{{label}}</th>
+                                                    {{/relatedTableFields}}
+                                                    <th scope="col" width="120" class="text-center">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach(${{modelNameSingularLower}}->{{relationshipName}} as ${{relatedModelVariable}})
+                                                    <tr>
+                                                        {{#relatedTableFields}}
+                                                        <td>
+                                                            @if('{{type}}' === 'image')
+                                                                @if(${{relatedModelVariable}}->{{name}})
+                                                                    <img src="{{ asset(${{relatedModelVariable}}->{{name}}) }}" 
+                                                                         alt="{{label}}" 
+                                                                         class="rounded"
+                                                                         style="width: 32px; height: 32px; object-fit: cover;">
+                                                                @else
+                                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                                         style="width: 32px; height: 32px;">
+                                                                        <i class="bi bi-image text-muted small"></i>
+                                                                    </div>
+                                                                @endif
+                                                            @elseif('{{type}}' === 'status')
+                                                                <span class="badge bg-{{ ${{relatedModelVariable}}->{{name}} == 'active' ? 'success' : 'secondary' }}">
+                                                                    {{ ucfirst(${{relatedModelVariable}}->{{name}}) }}
+                                                                </span>
+                                                            @elseif('{{type}}' === 'date')
+                                                                {{ ${{relatedModelVariable}}->{{name}}?->format('M d, Y') }}
+                                                            @else
+                                                                {{ Str::limit(${{relatedModelVariable}}->{{name}}, 30) }}
+                                                            @endif
+                                                        </td>
+                                                        {{/relatedTableFields}}
+                                                        <td class="text-center">
+                                                            <div class="btn-group" role="group">
+                                                                @can('view', ${{relatedModelVariable}})
+                                                                    <a href="{{ route('{{relatedRouteName}}.show', ${{relatedModelVariable}}) }}" 
+                                                                       class="btn btn-sm btn-outline-info"
+                                                                       title="View {{relatedModelSingular}}">
+                                                                        <i class="bi bi-eye"></i>
+                                                                    </a>
+                                                                @endcan
+                                                                
+                                                                @can('update', ${{relatedModelVariable}})
+                                                                    <a href="{{ route('{{relatedRouteName}}.edit', ${{relatedModelVariable}}) }}" 
+                                                                       class="btn btn-sm btn-outline-warning"
+                                                                       title="Edit {{relatedModelSingular}}">
+                                                                        <i class="bi bi-pencil"></i>
+                                                                    </a>
+                                                                @endcan
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                @else
+                                    <div class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-{{relationshipIcon}} display-4 d-block mb-2"></i>
+                                            <p>No {{relationshipLabel}} found</p>
+                                            @if('{{relationshipType}}' === 'hasMany')
+                                                @can('create', {{relatedModelClass}}::class)
+                                                    <a href="{{ route('{{relatedRouteName}}.create', ['{{foreignKey}}' => ${{modelNameSingularLower}}->{{primaryKey}}]) }}" 
+                                                       class="btn btn-outline-primary">
+                                                        <i class="bi bi-plus-lg me-1"></i>
+                                                        Add First {{relatedModelSingular}}
+                                                    </a>
+                                                @endcan
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+                    {{/relationships}}
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Quick Info Card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Quick Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">ID</div>
+                                        <div class="fw-bold">{{ ${{modelNameSingularLower}}->{{primaryKey}} }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Status</div>
+                                        <div>
+                                            @if(isset(${{modelNameSingularLower}}->status))
+                                                <span class="badge bg-{{ ${{modelNameSingularLower}}->status == 'active' ? 'success' : 'secondary' }}">
+                                                    {{ ucfirst(${{modelNameSingularLower}}->status) }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Created</div>
+                                        <div class="small">{{ ${{modelNameSingularLower}}->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Updated</div>
+                                        <div class="small">{{ ${{modelNameSingularLower}}->updated_at->format('M d, Y') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions Card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-lightning me-2"></i>
+                                Quick Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                @can('update', ${{modelNameSingularLower}})
+                                    <a href="{{ route('{{routeName}}.edit', ${{modelNameSingularLower}}) }}" 
+                                       class="btn btn-warning">
+                                        <i class="bi bi-pencil me-1"></i>
+                                        Edit {{modelNameSingular}}
+                                    </a>
+                                @endcan
+                                
+                                @can('create', {{modelClass}}::class)
+                                    <a href="{{ route('{{routeName}}.create') }}" 
+                                       class="btn btn-success">
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create New {{modelNameSingular}}
+                                    </a>
+                                @endcan
+                                
+                                <button type="button" 
+                                        class="btn btn-outline-primary"
+                                        onclick="window.print()">
+                                    <i class="bi bi-printer me-1"></i>
+                                    Print Details
+                                </button>
+                                
+                                <button type="button" 
+                                        class="btn btn-outline-secondary"
+                                        onclick="exportToJson()">
+                                    <i class="bi bi-download me-1"></i>
+                                    Export Data
+                                </button>
+                                
+                                @can('delete', ${{modelNameSingularLower}})
+                                    <button type="button" 
+                                            class="btn btn-outline-danger"
+                                            onclick="confirmDelete()">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Delete {{modelNameSingular}}
+                                    </button>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Timeline (if audit logs are available) -->
+                    @if(method_exists(${{modelNameSingularLower}}, 'audits') && ${{modelNameSingularLower}}->audits->count() > 0)
+                        <div class="card shadow">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="card-title mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Recent Activity
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="timeline">
+                                    @foreach(${{modelNameSingularLower}}->audits->take(5) as $audit)
+                                        <div class="timeline-item p-3 border-bottom">
+                                            <div class="d-flex">
+                                                <div class="timeline-marker me-3">
+                                                    <i class="bi bi-{{ $audit->event == 'created' ? 'plus' : ($audit->event == 'updated' ? 'pencil' : 'trash') }} text-{{ $audit->event == 'created' ? 'success' : ($audit->event == 'updated' ? 'warning' : 'danger') }}"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-bold small">
+                                                        {{ ucfirst($audit->event) }}
+                                                    </div>
+                                                    <div class="text-muted small">
+                                                        {{ $audit->created_at->diffForHumans() }}
+                                                    </div>
+                                                    @if($audit->user)
+                                                        <div class="text-muted small">
+                                                            by {{ $audit->user->name }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" class="img-fluid" alt="Image preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this {{modelNameSingular}}?</p>
+                <p class="text-muted mb-0">This action cannot be undone and may affect related data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="performDelete()">
+                    <i class="bi bi-trash me-1"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('styles')
+<style>
+@media print {
+    .btn, .card-header .col-auto, .breadcrumb, nav {
+        display: none !important;
+    }
+    
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    .container-fluid {
+        padding: 0 !important;
+    }
+}
+
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.form-control-plaintext {
+    min-height: auto;
+    padding: 0;
+    font-size: 0.95rem;
+}
+
+.badge.fs-6 {
+    font-size: 0.875rem !important;
+}
+
+.card-title {
+    color: #5a5c69;
+}
+
+.border-start.border-primary {
+    border-width: 3px !important;
+}
+
+.img-thumbnail {
+    transition: transform 0.2s;
+}
+
+.img-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+code {
+    font-size: 0.875rem;
+    color: #e83e8c;
+}
+
+pre {
+    font-size: 0.8rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Image modal functionality
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    
+    imageModal?.addEventListener('show.bs.modal', function(event) {
+        const trigger = event.relatedTarget;
+        const imageSrc = trigger.getAttribute('data-image-src');
+        modalImage.src = imageSrc;
+    });
+});
+
+// Delete confirmation
+function confirmDelete() {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+function performDelete() {
+    fetch('{{ route('{{routeName}}.destroy', ${{modelNameSingularLower}}) }}', {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        
+        if (data.success) {
+            showAlert('success', data.message || '{{modelNameSingular}} deleted successfully');
+            setTimeout(() => {
+                window.location.href = '{{ route('{{routeName}}.index') }}';
+            }, 1500);
+        } else {
+            showAlert('danger', data.message || 'Error deleting {{modelNameSingular}}');
+        }
+    })
+    .catch(error => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        showAlert('danger', 'An error occurred while deleting the {{modelNameSingular}}');
+        console.error('Error:', error);
+    });
+}
+
+// Export functionality
+function exportToJson() {
+    const data = {
+        {{#detailFields}}
+        '{{name}}': {!! json_encode(${{modelNameSingularLower}}->{{name}}) !!},
+        {{/detailFields}}
+        'created_at': '{{ ${{modelNameSingularLower}}->created_at }}',
+        'updated_at': '{{ ${{modelNameSingularLower}}->updated_at }}'
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(dataBlob);
+    link.download = '{{modelNameSingularLower}}-{{ ${{modelNameSingularLower}}->{{primaryKey}} }}-' + new Date().toISOString().split('T')[0] + '.json';
+    link.click();
+}
+
+// Alert helper
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            bootstrap.Alert.getInstance(alertDiv)?.close();
+        }
+    }, 5000);
+}
+
+// Copy to clipboard functionality
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showAlert('success', 'Copied to clipboard');
+    }, function() {
+        showAlert('warning', 'Could not copy to clipboard');
+    });
+}
+
+// Add click handlers for copyable elements
+document.querySelectorAll('[data-copyable]').forEach(element => {
+    element.style.cursor = 'pointer';
+    element.title = 'Click to copy';
+    element.addEventListener('click', function() {
+        copyToClipboard(this.textContent.trim());
+    });
+});
+</script>
+@endpush

@@ -1,0 +1,528 @@
+@props([
+    'id' => 'modal',
+    'title' => 'Modal',
+    'size' => '', // sm, lg, xl, fullscreen
+    'centered' => false,
+    'scrollable' => false,
+    'backdrop' => 'true', // true, false, static
+    'keyboard' => 'true',
+    'focus' => 'true',
+    'type' => 'default', // default, confirmation, form, image, loading
+    'variant' => 'primary', // primary, secondary, success, danger, warning, info
+    'showHeader' => true,
+    'showFooter' => true,
+    'closeButton' => true,
+    'animation' => true,
+    'icon' => null,
+    'confirmText' => 'Confirm',
+    'cancelText' => 'Cancel',
+    'confirmAction' => null,
+    'cancelAction' => null,
+    'formAction' => null,
+    'formMethod' => 'POST',
+    'autoFocus' => null
+])
+
+@php
+    $modalClasses = ['modal'];
+    if ($animation) $modalClasses[] = 'fade';
+    
+    $dialogClasses = ['modal-dialog'];
+    if ($size) $dialogClasses[] = 'modal-' . $size;
+    if ($centered) $dialogClasses[] = 'modal-dialog-centered';
+    if ($scrollable) $dialogClasses[] = 'modal-dialog-scrollable';
+    
+    $modalAttributes = [
+        'id' => $id,
+        'tabindex' => '-1',
+        'aria-labelledby' => $id . 'Label',
+        'aria-hidden' => 'true',
+        'data-bs-backdrop' => $backdrop,
+        'data-bs-keyboard' => $keyboard,
+        'data-bs-focus' => $focus
+    ];
+    
+    if ($type === 'confirmation') {
+        $icon = $icon ?: 'exclamation-triangle';
+        $variant = $variant ?: 'warning';
+    } elseif ($type === 'form') {
+        $showFooter = false; // Forms handle their own footers
+    } elseif ($type === 'loading') {
+        $backdrop = 'static';
+        $keyboard = 'false';
+        $closeButton = false;
+        $showFooter = false;
+    }
+@endphp
+
+<div class="{{ implode(' ', $modalClasses) }}" {!! html_attributes($modalAttributes) !!}>
+    <div class="{{ implode(' ', $dialogClasses) }}">
+        <div class="modal-content">
+            @if($showHeader)
+                <div class="modal-header {{ $type === 'confirmation' ? 'border-0 pb-0' : '' }}">
+                    <h5 class="modal-title d-flex align-items-center" id="{{ $id }}Label">
+                        @if($icon)
+                            <i class="bi bi-{{ $icon }} me-2 text-{{ $variant }}" aria-hidden="true"></i>
+                        @endif
+                        {{ $title }}
+                    </h5>
+                    @if($closeButton && $type !== 'loading')
+                        <button type="button" 
+                                class="btn-close" 
+                                data-bs-dismiss="modal" 
+                                aria-label="Close"></button>
+                    @endif
+                </div>
+            @endif
+
+            @if($type === 'form' && $formAction)
+                <form action="{{ $formAction }}" 
+                      method="{{ $formMethod === 'GET' ? 'GET' : 'POST' }}" 
+                      id="{{ $id }}-form"
+                      enctype="multipart/form-data">
+                    @if($formMethod !== 'GET')
+                        @csrf
+                        @if($formMethod !== 'POST')
+                            @method($formMethod)
+                        @endif
+                    @endif
+            @endif
+
+            <div class="modal-body {{ $type === 'confirmation' ? 'pt-0' : '' }}">
+                @if($type === 'loading')
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-{{ $variant }}" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <div class="mt-3">
+                            {{ $slot->isEmpty() ? 'Loading...' : $slot }}
+                        </div>
+                    </div>
+                @elseif($type === 'confirmation')
+                    <div class="text-center py-3">
+                        @if($icon)
+                            <i class="bi bi-{{ $icon }} display-1 text-{{ $variant }} mb-3" aria-hidden="true"></i>
+                        @endif
+                        <div class="mb-3">
+                            {{ $slot }}
+                        </div>
+                    </div>
+                @elseif($type === 'image')
+                    <div class="text-center">
+                        {{ $slot }}
+                    </div>
+                @else
+                    {{ $slot }}
+                @endif
+            </div>
+
+            @if($type === 'form' && $formAction)
+                </form>
+            @endif
+
+            @if($showFooter && $type !== 'loading')
+                <div class="modal-footer {{ $type === 'confirmation' ? 'border-0 pt-0' : '' }}">
+                    @if($type === 'confirmation')
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                data-bs-dismiss="modal"
+                                @if($cancelAction) onclick="{{ $cancelAction }}" @endif>
+                            {{ $cancelText }}
+                        </button>
+                        <button type="button" 
+                                class="btn btn-{{ $variant }}" 
+                                @if($confirmAction) onclick="{{ $confirmAction }}" @endif>
+                            {{ $confirmText }}
+                        </button>
+                    @elseif($type === 'form')
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-{{ $variant }}" form="{{ $id }}-form">
+                            <span class="btn-text">{{ $confirmText }}</span>
+                            <span class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    @else
+                        {{ $footer ?? '' }}
+                        @if(!isset($footer))
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                        @endif
+                    @endif
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+@once
+@push('styles')
+<style>
+.modal-backdrop {
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    border-top-left-radius: 0.75rem;
+    border-top-right-radius: 0.75rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    border-bottom-left-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+}
+
+.modal-dialog-centered {
+    min-height: calc(100% - 1rem);
+}
+
+.modal-dialog-centered::before {
+    height: calc(100vh - 1rem);
+}
+
+.modal-fullscreen .modal-content {
+    border-radius: 0;
+}
+
+.modal-sm .modal-content {
+    border-radius: 0.5rem;
+}
+
+.modal-xl .modal-content,
+.modal-lg .modal-content {
+    border-radius: 1rem;
+}
+
+/* Animation improvements */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Loading modal */
+.modal .spinner-border {
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Image modal improvements */
+.modal-body img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+}
+
+/* Form modal improvements */
+.modal-body .form-group:last-child,
+.modal-body .mb-3:last-child {
+    margin-bottom: 0;
+}
+
+.modal-body .row .form-group,
+.modal-body .row .mb-3 {
+    margin-bottom: 1rem;
+}
+
+/* Confirmation modal */
+.modal-body .display-1 {
+    font-size: 4rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    
+    .modal-dialog-centered {
+        min-height: calc(100% - 1rem);
+    }
+    
+    .modal-content {
+        border-radius: 0.5rem;
+    }
+    
+    .modal-body .display-1 {
+        font-size: 3rem;
+    }
+}
+
+/* Enhanced focus styles */
+.modal:focus {
+    outline: none;
+}
+
+.modal .btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Scrollable modal improvements */
+.modal-dialog-scrollable .modal-content {
+    max-height: calc(100vh - 1rem);
+}
+
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+}
+
+/* Custom modal sizes */
+.modal-xs .modal-dialog {
+    max-width: 300px;
+}
+
+@media (min-width: 1400px) {
+    .modal-xxl .modal-dialog {
+        max-width: 1140px;
+    }
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus first input in form modals
+    @if($autoFocus || $type === 'form')
+    const modal{{ Str::studly($id) }} = document.getElementById('{{ $id }}');
+    if (modal{{ Str::studly($id) }}) {
+        modal{{ Str::studly($id) }}.addEventListener('shown.bs.modal', function() {
+            const focusElement = this.querySelector('{{ $autoFocus ?: "input:not([type=\"hidden\"]), select, textarea" }}');
+            if (focusElement) {
+                focusElement.focus();
+            }
+        });
+    }
+    @endif
+    
+    // Form submission handling
+    @if($type === 'form' && $formAction)
+    const form{{ Str::studly($id) }} = document.getElementById('{{ $id }}-form');
+    if (form{{ Str::studly($id) }}) {
+        form{{ Str::studly($id) }}.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitModalForm('{{ $id }}');
+        });
+    }
+    @endif
+    
+    // Keyboard navigation
+    @if($keyboard === 'true')
+    const modal{{ Str::studly($id) }} = document.getElementById('{{ $id }}');
+    if (modal{{ Str::studly($id) }}) {
+        modal{{ Str::studly($id) }}.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && {{ $closeButton ? 'true' : 'false' }}) {
+                bootstrap.Modal.getInstance(this)?.hide();
+            }
+        });
+    }
+    @endif
+});
+
+// Global modal functions
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+    }
+}
+
+function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        const bsModal = bootstrap.Modal.getInstance(modal);
+        if (bsModal) {
+            bsModal.hide();
+        }
+    }
+}
+
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        const bsModal = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+        bsModal.toggle();
+    }
+}
+
+@if($type === 'form')
+function submitModalForm(modalId) {
+    const modal = document.getElementById(modalId);
+    const form = document.getElementById(modalId + '-form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    if (!form) return;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    if (spinner) spinner.classList.remove('d-none');
+    if (btnText) btnText.textContent = 'Saving...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: form.method,
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide modal
+            bootstrap.Modal.getInstance(modal).hide();
+            
+            // Show success message
+            showAlert('success', data.message || 'Operation completed successfully');
+            
+            // Reload page or redirect
+            if (data.redirect) {
+                setTimeout(() => window.location.href = data.redirect, 1000);
+            } else {
+                setTimeout(() => location.reload(), 1000);
+            }
+        } else {
+            throw new Error(data.message || 'An error occurred');
+        }
+    })
+    .catch(error => {
+        showAlert('danger', error.message || 'An error occurred while processing your request');
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        if (spinner) spinner.classList.add('d-none');
+        if (btnText) btnText.textContent = '{{ $confirmText }}';
+    });
+}
+@endif
+
+@if($type === 'confirmation')
+function showConfirmationModal(options = {}) {
+    const {
+        title = 'Confirm Action',
+        message = 'Are you sure you want to proceed?',
+        confirmText = 'Confirm',
+        cancelText = 'Cancel',
+        variant = 'danger',
+        icon = 'exclamation-triangle',
+        onConfirm = null,
+        onCancel = null
+    } = options;
+    
+    const modalId = 'dynamic-confirmation-modal';
+    let modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = modalId;
+        modal.setAttribute('tabindex', '-1');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title d-flex align-items-center">
+                            <i class="bi bi-${icon} me-2 text-${variant}"></i>
+                            ${title}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body pt-0 text-center">
+                        <div class="py-3">
+                            <i class="bi bi-${icon} display-1 text-${variant} mb-3"></i>
+                            <div class="mb-3">${message}</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelText}</button>
+                        <button type="button" class="btn btn-${variant}" id="confirm-action-btn">${confirmText}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Update content
+    modal.querySelector('.modal-title').innerHTML = `<i class="bi bi-${icon} me-2 text-${variant}"></i>${title}`;
+    modal.querySelector('.modal-body .display-1').className = `bi bi-${icon} display-1 text-${variant} mb-3`;
+    modal.querySelector('.modal-body .mb-3:last-child').textContent = message;
+    modal.querySelector('.btn-secondary').textContent = cancelText;
+    modal.querySelector('#confirm-action-btn').textContent = confirmText;
+    modal.querySelector('#confirm-action-btn').className = `btn btn-${variant}`;
+    
+    // Set up event handlers
+    const confirmBtn = modal.querySelector('#confirm-action-btn');
+    confirmBtn.onclick = function() {
+        if (onConfirm) onConfirm();
+        bootstrap.Modal.getInstance(modal).hide();
+    };
+    
+    if (onCancel) {
+        modal.querySelector('.btn-secondary').onclick = function() {
+            onCancel();
+        };
+    }
+    
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+}
+@endif
+
+// Alert helper
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            bootstrap.Alert.getInstance(alertDiv)?.close();
+        }
+    }, 5000);
+}
+</script>
+@endpush
+@endonce
+
+@php
+function html_attributes($attributes) {
+    $html = [];
+    foreach ($attributes as $key => $value) {
+        if (is_bool($value)) {
+            if ($value) {
+                $html[] = $key;
+            }
+        } elseif ($value !== null && $value !== '') {
+            $html[] = $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+        }
+    }
+    return implode(' ', $html);
+}
+@endphp

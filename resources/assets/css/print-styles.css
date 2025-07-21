@@ -1,0 +1,613 @@
+/**
+ * Wink View Generator - Print Styles
+ * 
+ * Print-optimized styles for reports and documentation
+ * 
+ * Features:
+ * - Print-specific layouts
+ * - Page break controls
+ * - Ink-saving optimizations
+ * - Table formatting for print
+ * - Typography adjustments
+ * - Hide non-essential elements
+ * 
+ * @version 2.0.0
+ */
+
+/* Print Media Query */
+@media print {
+  
+  /* Reset and Base Styles */
+  * {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  html {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+  }
+  
+  h1 {
+    font-size: 24pt;
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.2em;
+  }
+  
+  h2 {
+    font-size: 18pt;
+    border-bottom: 1px solid #000;
+    padding-bottom: 0.1em;
+  }
+  
+  h3 {
+    font-size: 14pt;
+  }
+  
+  h4 {
+    font-size: 12pt;
+  }
+  
+  h5, h6 {
+    font-size: 11pt;
+  }
+  
+  p {
+    margin: 0 0 1em 0;
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Lists */
+  ul, ol {
+    margin: 0 0 1em 1.5em;
+    padding: 0;
+  }
+  
+  li {
+    margin-bottom: 0.25em;
+  }
+  
+  /* Links */
+  a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #666;
+  }
+  
+  a[href^="javascript:"]:after,
+  a[href^="#"]:after {
+    content: "";
+  }
+  
+  /* Images */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid;
+  }
+  
+  /* Page Layout */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+  
+  @page :first {
+    margin-top: 3cm;
+  }
+  
+  @page :left {
+    margin-left: 3cm;
+    margin-right: 2cm;
+  }
+  
+  @page :right {
+    margin-left: 2cm;
+    margin-right: 3cm;
+  }
+  
+  /* Page Breaks */
+  .wink-page-break {
+    page-break-before: always;
+  }
+  
+  .wink-page-break-after {
+    page-break-after: always;
+  }
+  
+  .wink-page-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+  
+  .wink-page-break-before-avoid {
+    page-break-before: avoid;
+  }
+  
+  .wink-page-break-after-avoid {
+    page-break-after: avoid;
+  }
+  
+  /* Hide Elements */
+  .wink-print-hidden,
+  .wink-d-print-none,
+  nav,
+  .navbar,
+  .nav,
+  .sidebar,
+  .toolbar,
+  .pagination,
+  .btn-group,
+  .modal,
+  .dropdown,
+  .tooltip,
+  .popover,
+  .alert-dismissible .close,
+  .wink-table-toolbar,
+  .wink-table-pagination,
+  .wink-search-controls,
+  .wink-bulk-actions,
+  .wink-table-actions,
+  .wink-form-help,
+  .wink-modal,
+  .wink-notification,
+  [data-print-hide] {
+    display: none !important;
+  }
+  
+  /* Show Print Elements */
+  .wink-print-visible,
+  .wink-d-print-block {
+    display: block !important;
+  }
+  
+  .wink-d-print-inline {
+    display: inline !important;
+  }
+  
+  .wink-d-print-inline-block {
+    display: inline-block !important;
+  }
+  
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 1em;
+    page-break-inside: avoid;
+  }
+  
+  .wink-table {
+    border: 1px solid #000;
+    margin-bottom: 1em;
+  }
+  
+  .wink-table th,
+  .wink-table td {
+    border: 1px solid #000 !important;
+    padding: 0.25em 0.5em !important;
+    text-align: left;
+    vertical-align: top;
+    font-size: 10pt;
+    line-height: 1.3;
+  }
+  
+  .wink-table th {
+    background-color: #f0f0f0 !important;
+    font-weight: bold;
+    text-align: center;
+    page-break-inside: avoid;
+    page-break-after: avoid;
+  }
+  
+  .wink-table tbody tr {
+    page-break-inside: avoid;
+  }
+  
+  .wink-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9 !important;
+  }
+  
+  /* Remove table hover effects */
+  .wink-table tbody tr:hover {
+    background-color: inherit !important;
+  }
+  
+  /* Table headers on every page */
+  .wink-table thead {
+    display: table-header-group;
+  }
+  
+  .wink-table tbody {
+    display: table-row-group;
+  }
+  
+  .wink-table tfoot {
+    display: table-footer-group;
+  }
+  
+  /* Forms */
+  .wink-form {
+    page-break-inside: avoid;
+  }
+  
+  .wink-form-group {
+    margin-bottom: 0.5em;
+    page-break-inside: avoid;
+  }
+  
+  .wink-form-label {
+    font-weight: bold;
+    margin-bottom: 0.25em;
+    display: block;
+  }
+  
+  .wink-form-control {
+    border: 1px solid #000 !important;
+    padding: 0.25em !important;
+    background: transparent !important;
+    display: block;
+    width: 100%;
+    margin-bottom: 0.25em;
+  }
+  
+  /* Remove form interactivity indicators */
+  .wink-form-control:focus,
+  .wink-form-control:hover {
+    border-color: #000 !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  
+  /* Checkboxes and radios */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 0.8em;
+    height: 0.8em;
+    border: 1px solid #000 !important;
+    background: #fff !important;
+  }
+  
+  input[type="checkbox"]:checked:after {
+    content: "✓";
+    font-size: 0.8em;
+    color: #000;
+  }
+  
+  input[type="radio"]:checked:after {
+    content: "●";
+    font-size: 0.8em;
+    color: #000;
+  }
+  
+  /* Cards */
+  .wink-card {
+    border: 1px solid #000 !important;
+    margin-bottom: 1em;
+    page-break-inside: avoid;
+  }
+  
+  .wink-card-header {
+    background-color: #f0f0f0 !important;
+    border-bottom: 1px solid #000 !important;
+    padding: 0.5em;
+    font-weight: bold;
+  }
+  
+  .wink-card-body {
+    padding: 0.5em;
+  }
+  
+  .wink-card-footer {
+    background-color: #f0f0f0 !important;
+    border-top: 1px solid #000 !important;
+    padding: 0.5em;
+  }
+  
+  /* Buttons */
+  .wink-btn {
+    border: 1px solid #000 !important;
+    padding: 0.25em 0.5em !important;
+    background: transparent !important;
+    color: #000 !important;
+    text-decoration: none;
+    display: inline-block;
+    margin: 0.1em;
+  }
+  
+  /* Badges */
+  .wink-badge {
+    border: 1px solid #000 !important;
+    padding: 0.1em 0.3em !important;
+    background: transparent !important;
+    color: #000 !important;
+    font-weight: bold;
+  }
+  
+  /* Alerts */
+  .wink-alert {
+    border: 2px solid #000 !important;
+    padding: 0.5em !important;
+    margin-bottom: 1em;
+    background: transparent !important;
+    page-break-inside: avoid;
+  }
+  
+  .wink-alert:before {
+    content: "⚠ ";
+    font-weight: bold;
+  }
+  
+  .wink-alert-success:before {
+    content: "✓ ";
+  }
+  
+  .wink-alert-danger:before {
+    content: "✗ ";
+  }
+  
+  .wink-alert-info:before {
+    content: "ℹ ";
+  }
+  
+  /* Layout */
+  .container,
+  .container-fluid {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .row {
+    margin: 0 !important;
+  }
+  
+  .col,
+  [class*="col-"] {
+    padding: 0 !important;
+    float: none !important;
+    width: auto !important;
+  }
+  
+  /* Flexbox adjustments */
+  .d-flex,
+  .d-inline-flex {
+    display: block !important;
+  }
+  
+  /* Grid adjustments */
+  .d-grid {
+    display: block !important;
+  }
+  
+  /* Print-specific utilities */
+  .wink-print-header {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+  }
+  
+  .wink-print-footer {
+    font-size: 10pt;
+    text-align: center;
+    border-top: 1px solid #000;
+    padding-top: 0.5em;
+    margin-top: 1em;
+  }
+  
+  .wink-print-signature {
+    margin-top: 2em;
+    border-top: 1px solid #000;
+    padding-top: 0.5em;
+    text-align: right;
+    font-size: 10pt;
+  }
+  
+  .wink-print-logo {
+    max-height: 2cm;
+    max-width: 5cm;
+  }
+  
+  /* Page numbers */
+  .wink-page-number:after {
+    content: counter(page);
+  }
+  
+  .wink-total-pages:after {
+    content: counter(pages);
+  }
+  
+  /* Report styles */
+  .wink-report-title {
+    font-size: 20pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1em;
+    page-break-after: avoid;
+  }
+  
+  .wink-report-subtitle {
+    font-size: 14pt;
+    text-align: center;
+    margin-bottom: 1.5em;
+    color: #666;
+    page-break-after: avoid;
+  }
+  
+  .wink-report-date {
+    font-size: 10pt;
+    text-align: right;
+    margin-bottom: 1em;
+    color: #666;
+  }
+  
+  .wink-report-section {
+    margin-bottom: 1.5em;
+    page-break-inside: avoid;
+  }
+  
+  .wink-report-section-title {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid #000;
+    page-break-after: avoid;
+  }
+  
+  /* Data visualization adjustments */
+  .chart,
+  .graph,
+  canvas {
+    page-break-inside: avoid;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* QR codes and barcodes */
+  .qr-code,
+  .barcode {
+    page-break-inside: avoid;
+    text-align: center;
+    margin: 1em 0;
+  }
+  
+  /* Invoice/Receipt styles */
+  .wink-invoice-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 1em;
+    margin-bottom: 1em;
+    page-break-after: avoid;
+  }
+  
+  .wink-invoice-details {
+    font-size: 10pt;
+    margin-bottom: 1em;
+  }
+  
+  .wink-invoice-total {
+    font-size: 12pt;
+    font-weight: bold;
+    border-top: 2px solid #000;
+    padding-top: 0.5em;
+    text-align: right;
+  }
+  
+  /* Terms and conditions */
+  .wink-terms {
+    font-size: 8pt;
+    color: #666;
+    margin-top: 1em;
+    border-top: 1px solid #ccc;
+    padding-top: 0.5em;
+  }
+  
+  /* Watermark */
+  .wink-watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 72pt;
+    color: rgba(0, 0, 0, 0.1);
+    z-index: -1;
+    pointer-events: none;
+  }
+  
+  /* Landscape orientation */
+  @media print and (orientation: landscape) {
+    .wink-landscape-table {
+      font-size: 8pt;
+    }
+    
+    .wink-landscape-table th,
+    .wink-landscape-table td {
+      padding: 0.15em 0.3em !important;
+    }
+  }
+  
+  /* Reduce margins for maximum content */
+  .wink-print-compact {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .wink-print-compact h1,
+  .wink-print-compact h2,
+  .wink-print-compact h3,
+  .wink-print-compact h4,
+  .wink-print-compact h5,
+  .wink-print-compact h6 {
+    margin-top: 0.5em;
+    margin-bottom: 0.25em;
+  }
+  
+  .wink-print-compact p {
+    margin-bottom: 0.5em;
+  }
+  
+  /* Ink-saving mode */
+  .wink-print-ink-save * {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: #666 !important;
+  }
+  
+  .wink-print-ink-save .wink-table th {
+    background-color: transparent !important;
+    font-weight: bold;
+  }
+  
+  .wink-print-ink-save .wink-table tbody tr:nth-child(even) {
+    background-color: transparent !important;
+  }
+}
+
+/* Screen-only styles for print preview */
+@media screen {
+  .wink-print-preview {
+    background: #f5f5f5;
+    padding: 2em;
+  }
+  
+  .wink-print-preview .wink-page {
+    background: white;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2em;
+    padding: 2cm;
+    width: 21cm;
+    min-height: 29.7cm;
+    margin: 0 auto 2em;
+  }
+}

@@ -1,0 +1,818 @@
+/**
+ * Wink View Generator - Animations and Micro-interactions
+ * 
+ * Smooth transitions and delightful micro-interactions
+ * 
+ * Features:
+ * - Entrance and exit animations
+ * - Hover and focus effects
+ * - Loading animations
+ * - Transition utilities
+ * - Gesture feedback
+ * - Performance optimized animations
+ * 
+ * @version 2.0.0
+ */
+
+/* Animation Variables */
+:root {
+  --wink-animation-duration-fast: 0.15s;
+  --wink-animation-duration-base: 0.3s;
+  --wink-animation-duration-slow: 0.5s;
+  --wink-animation-easing-ease: ease;
+  --wink-animation-easing-ease-in: ease-in;
+  --wink-animation-easing-ease-out: ease-out;
+  --wink-animation-easing-ease-in-out: ease-in-out;
+  --wink-animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --wink-animation-easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Base Animation Classes */
+.wink-animate {
+  animation-duration: var(--wink-animation-duration-base);
+  animation-fill-mode: both;
+}
+
+.wink-animate-fast {
+  animation-duration: var(--wink-animation-duration-fast);
+}
+
+.wink-animate-slow {
+  animation-duration: var(--wink-animation-duration-slow);
+}
+
+.wink-animate-infinite {
+  animation-iteration-count: infinite;
+}
+
+.wink-animate-bounce {
+  animation-timing-function: var(--wink-animation-easing-bounce);
+}
+
+.wink-animate-spring {
+  animation-timing-function: var(--wink-animation-easing-spring);
+}
+
+/* Entrance Animations */
+.wink-fade-in {
+  animation-name: wink-fade-in;
+}
+
+@keyframes wink-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wink-fade-in-up {
+  animation-name: wink-fade-in-up;
+}
+
+@keyframes wink-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wink-fade-in-down {
+  animation-name: wink-fade-in-down;
+}
+
+@keyframes wink-fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wink-fade-in-left {
+  animation-name: wink-fade-in-left;
+}
+
+@keyframes wink-fade-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.wink-fade-in-right {
+  animation-name: wink-fade-in-right;
+}
+
+@keyframes wink-fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.wink-slide-in-up {
+  animation-name: wink-slide-in-up;
+}
+
+@keyframes wink-slide-in-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.wink-slide-in-down {
+  animation-name: wink-slide-in-down;
+}
+
+@keyframes wink-slide-in-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.wink-slide-in-left {
+  animation-name: wink-slide-in-left;
+}
+
+@keyframes wink-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.wink-slide-in-right {
+  animation-name: wink-slide-in-right;
+}
+
+@keyframes wink-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.wink-zoom-in {
+  animation-name: wink-zoom-in;
+}
+
+@keyframes wink-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.wink-zoom-in-up {
+  animation-name: wink-zoom-in-up;
+}
+
+@keyframes wink-zoom-in-up {
+  from {
+    opacity: 0;
+    transform: scale(0.1) translateY(2000px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.475) translateY(-60px);
+  }
+  to {
+    transform: scale(1) translateY(0);
+  }
+}
+
+.wink-bounce-in {
+  animation-name: wink-bounce-in;
+}
+
+@keyframes wink-bounce-in {
+  from,
+  20%,
+  40%,
+  60%,
+  80%,
+  to {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+  }
+  0% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+  20% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    transform: scale3d(0.9, 0.9, 0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(0.97, 0.97, 0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.wink-flip-in-x {
+  animation-name: wink-flip-in-x;
+}
+
+@keyframes wink-flip-in-x {
+  from {
+    transform: perspective(400px) rotateX(90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+  40% {
+    transform: perspective(400px) rotateX(-20deg);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: perspective(400px) rotateX(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: perspective(400px) rotateX(-5deg);
+  }
+  to {
+    transform: perspective(400px);
+  }
+}
+
+.wink-flip-in-y {
+  animation-name: wink-flip-in-y;
+}
+
+@keyframes wink-flip-in-y {
+  from {
+    transform: perspective(400px) rotateY(90deg);
+    animation-timing-function: ease-in;
+    opacity: 0;
+  }
+  40% {
+    transform: perspective(400px) rotateY(-20deg);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: perspective(400px) rotateY(10deg);
+    opacity: 1;
+  }
+  80% {
+    transform: perspective(400px) rotateY(-5deg);
+  }
+  to {
+    transform: perspective(400px);
+  }
+}
+
+/* Exit Animations */
+.wink-fade-out {
+  animation-name: wink-fade-out;
+}
+
+@keyframes wink-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.wink-fade-out-up {
+  animation-name: wink-fade-out-up;
+}
+
+@keyframes wink-fade-out-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+}
+
+.wink-fade-out-down {
+  animation-name: wink-fade-out-down;
+}
+
+@keyframes wink-fade-out-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}
+
+.wink-slide-out-up {
+  animation-name: wink-slide-out-up;
+}
+
+@keyframes wink-slide-out-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.wink-slide-out-down {
+  animation-name: wink-slide-out-down;
+}
+
+@keyframes wink-slide-out-down {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+.wink-zoom-out {
+  animation-name: wink-zoom-out;
+}
+
+@keyframes wink-zoom-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+/* Attention Seekers */
+.wink-bounce {
+  animation-name: wink-bounce;
+}
+
+@keyframes wink-bounce {
+  from,
+  20%,
+  53%,
+  to {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0);
+  }
+  40%,
+  43% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -30px, 0) scaleY(1.1);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -15px, 0) scaleY(1.05);
+  }
+  80% {
+    transition-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0) scaleY(0.95);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0) scaleY(1.02);
+  }
+}
+
+.wink-pulse {
+  animation-name: wink-pulse;
+}
+
+@keyframes wink-pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.wink-shake {
+  animation-name: wink-shake;
+}
+
+@keyframes wink-shake {
+  from,
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translate3d(-10px, 0, 0);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translate3d(10px, 0, 0);
+  }
+}
+
+.wink-swing {
+  animation-name: wink-swing;
+  transform-origin: top center;
+}
+
+@keyframes wink-swing {
+  20% {
+    transform: rotate3d(0, 0, 1, 15deg);
+  }
+  40% {
+    transform: rotate3d(0, 0, 1, -10deg);
+  }
+  60% {
+    transform: rotate3d(0, 0, 1, 5deg);
+  }
+  80% {
+    transform: rotate3d(0, 0, 1, -5deg);
+  }
+  to {
+    transform: rotate3d(0, 0, 1, 0deg);
+  }
+}
+
+.wink-tada {
+  animation-name: wink-tada;
+}
+
+@keyframes wink-tada {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+  10%,
+  20% {
+    transform: scale3d(0.9, 0.9, 0.9) rotate3d(0, 0, 1, -3deg);
+  }
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, 3deg);
+  }
+  40%,
+  60%,
+  80% {
+    transform: scale3d(1.1, 1.1, 1.1) rotate3d(0, 0, 1, -3deg);
+  }
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.wink-wobble {
+  animation-name: wink-wobble;
+}
+
+@keyframes wink-wobble {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  15% {
+    transform: translate3d(-25%, 0, 0) rotate3d(0, 0, 1, -5deg);
+  }
+  30% {
+    transform: translate3d(20%, 0, 0) rotate3d(0, 0, 1, 3deg);
+  }
+  45% {
+    transform: translate3d(-15%, 0, 0) rotate3d(0, 0, 1, -3deg);
+  }
+  60% {
+    transform: translate3d(10%, 0, 0) rotate3d(0, 0, 1, 2deg);
+  }
+  75% {
+    transform: translate3d(-5%, 0, 0) rotate3d(0, 0, 1, -1deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Loading Animations */
+.wink-spin {
+  animation: wink-spin 1s linear infinite;
+}
+
+.wink-ping {
+  animation: wink-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes wink-ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.wink-heartbeat {
+  animation: wink-heartbeat 1.5s ease-in-out infinite both;
+}
+
+@keyframes wink-heartbeat {
+  from {
+    transform: scale(1);
+    transform-origin: center center;
+    animation-timing-function: ease-out;
+  }
+  10% {
+    transform: scale(0.91);
+    animation-timing-function: ease-in;
+  }
+  17% {
+    transform: scale(0.98);
+    animation-timing-function: ease-out;
+  }
+  33% {
+    transform: scale(0.87);
+    animation-timing-function: ease-in;
+  }
+  45% {
+    transform: scale(1);
+    animation-timing-function: ease-out;
+  }
+}
+
+/* Hover Effects */
+.wink-hover-grow:hover {
+  transform: scale(1.05);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-shrink:hover {
+  transform: scale(0.95);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-rotate:hover {
+  transform: rotate(5deg);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-tilt:hover {
+  transform: perspective(1000px) rotateX(10deg);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--wink-shadow-lg);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-float {
+  transition: var(--wink-transition);
+}
+
+.wink-hover-float:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wink-shadow);
+}
+
+.wink-hover-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 123, 255, 0.6);
+  transition: var(--wink-transition);
+}
+
+.wink-hover-shadow:hover {
+  box-shadow: var(--wink-shadow-lg);
+  transition: var(--wink-transition);
+}
+
+/* Focus Effects */
+.wink-focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+  transition: var(--wink-transition);
+}
+
+.wink-focus-glow:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3), 0 0 20px rgba(0, 123, 255, 0.4);
+  transition: var(--wink-transition);
+}
+
+/* Transition Utilities */
+.wink-transition {
+  transition: var(--wink-transition);
+}
+
+.wink-transition-fast {
+  transition: all var(--wink-animation-duration-fast) var(--wink-animation-easing-ease);
+}
+
+.wink-transition-slow {
+  transition: all var(--wink-animation-duration-slow) var(--wink-animation-easing-ease);
+}
+
+.wink-transition-colors {
+  transition: color var(--wink-animation-duration-base) var(--wink-animation-easing-ease),
+              background-color var(--wink-animation-duration-base) var(--wink-animation-easing-ease),
+              border-color var(--wink-animation-duration-base) var(--wink-animation-easing-ease);
+}
+
+.wink-transition-transform {
+  transition: transform var(--wink-animation-duration-base) var(--wink-animation-easing-ease);
+}
+
+.wink-transition-opacity {
+  transition: opacity var(--wink-animation-duration-base) var(--wink-animation-easing-ease);
+}
+
+.wink-transition-shadow {
+  transition: box-shadow var(--wink-animation-duration-base) var(--wink-animation-easing-ease);
+}
+
+/* Gesture Feedback */
+.wink-tap-highlight {
+  -webkit-tap-highlight-color: rgba(0, 123, 255, 0.2);
+  tap-highlight-color: rgba(0, 123, 255, 0.2);
+}
+
+.wink-touch-feedback:active {
+  transform: scale(0.98);
+  opacity: 0.8;
+  transition: var(--wink-animation-duration-fast);
+}
+
+/* Animation Delays */
+.wink-delay-75 {
+  animation-delay: 75ms;
+}
+
+.wink-delay-100 {
+  animation-delay: 100ms;
+}
+
+.wink-delay-150 {
+  animation-delay: 150ms;
+}
+
+.wink-delay-200 {
+  animation-delay: 200ms;
+}
+
+.wink-delay-300 {
+  animation-delay: 300ms;
+}
+
+.wink-delay-500 {
+  animation-delay: 500ms;
+}
+
+.wink-delay-700 {
+  animation-delay: 700ms;
+}
+
+.wink-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+/* Animation Play States */
+.wink-animation-paused {
+  animation-play-state: paused;
+}
+
+.wink-animation-running {
+  animation-play-state: running;
+}
+
+/* Stagger Animations */
+.wink-stagger-children > * {
+  animation-delay: calc(var(--wink-animation-stagger-delay, 100ms) * var(--wink-animation-index, 0));
+}
+
+/* Parallax Effect */
+.wink-parallax {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Performance Optimizations */
+.wink-will-change-transform {
+  will-change: transform;
+}
+
+.wink-will-change-opacity {
+  will-change: opacity;
+}
+
+.wink-will-change-scroll {
+  will-change: scroll-position;
+}
+
+.wink-backface-hidden {
+  backface-visibility: hidden;
+}
+
+.wink-transform-gpu {
+  transform: translateZ(0);
+}
+
+/* Scroll Animations */
+.wink-scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease-out;
+}
+
+.wink-scroll-reveal.wink-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.wink-scroll-fade {
+  opacity: 0;
+  transition: opacity 0.6s ease-out;
+}
+
+.wink-scroll-fade.wink-revealed {
+  opacity: 1;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .wink-hover-lift:hover,
+  .wink-hover-grow:hover,
+  .wink-hover-shrink:hover,
+  .wink-hover-rotate:hover,
+  .wink-hover-tilt:hover,
+  .wink-hover-float:hover {
+    transform: none;
+  }
+  
+  .wink-touch-feedback:active {
+    transform: none;
+  }
+  
+  .wink-scroll-reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Print Optimizations */
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,0 +1,250 @@
+@props([
+    'action' => '',
+    'method' => 'GET',
+    'fields' => [],
+    'searchPlaceholder' => 'Search...',
+    'showReset' => true,
+    'showSubmit' => true,
+    'class' => ''
+])
+
+<form action="{{ $action }}" method="{{ $method }}" class="{{ $class }}">
+    @if($method !== 'GET')
+        @csrf
+    @endif
+    
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Search Field -->
+        <div class="lg:col-span-2">
+            <label for="search" class="sr-only">Search</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input type="text" 
+                       name="search" 
+                       id="search"
+                       value="{{ request('search') }}"
+                       placeholder="{{ $searchPlaceholder }}"
+                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+            </div>
+        </div>
+        
+        <!-- Dynamic Filter Fields -->
+        @foreach($fields as $field)
+            <div class="{{ $field['colSpan'] ?? '' }}">
+                <label for="{{ $field['name'] }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {{ $field['label'] }}
+                </label>
+                
+                @if($field['type'] === 'select')
+                    <select name="{{ $field['name'] }}" 
+                            id="{{ $field['name'] }}" 
+                            class="block w-full border border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                        <option value="">{{ $field['placeholder'] ?? 'All ' . $field['label'] }}</option>
+                        @foreach($field['options'] as $value => $label)
+                            <option value="{{ $value }}" {{ request($field['name']) == $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    
+                @elseif($field['type'] === 'date')
+                    <input type="date" 
+                           name="{{ $field['name'] }}" 
+                           id="{{ $field['name'] }}"
+                           value="{{ request($field['name']) }}"
+                           class="block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                    
+                @elseif($field['type'] === 'daterange')
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" 
+                               name="{{ $field['name'] }}_from" 
+                               id="{{ $field['name'] }}_from"
+                               value="{{ request($field['name'] . '_from') }}"
+                               placeholder="From"
+                               class="block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                        <input type="date" 
+                               name="{{ $field['name'] }}_to" 
+                               id="{{ $field['name'] }}_to"
+                               value="{{ request($field['name'] . '_to') }}"
+                               placeholder="To"
+                               class="block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                    </div>
+                    
+                @elseif($field['type'] === 'number')
+                    <input type="number" 
+                           name="{{ $field['name'] }}" 
+                           id="{{ $field['name'] }}"
+                           value="{{ request($field['name']) }}"
+                           placeholder="{{ $field['placeholder'] ?? '' }}"
+                           min="{{ $field['min'] ?? '' }}"
+                           max="{{ $field['max'] ?? '' }}"
+                           step="{{ $field['step'] ?? '' }}"
+                           class="block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                    
+                @elseif($field['type'] === 'checkbox')
+                    <div class="flex items-center h-10">
+                        <input type="hidden" name="{{ $field['name'] }}" value="0">
+                        <input type="checkbox" 
+                               name="{{ $field['name'] }}" 
+                               id="{{ $field['name'] }}"
+                               value="1"
+                               {{ request($field['name']) ? 'checked' : '' }}
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-500 dark:ring-offset-gray-800 transition-colors">
+                        <label for="{{ $field['name'] }}" class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                            {{ $field['checkboxLabel'] ?? $field['label'] }}
+                        </label>
+                    </div>
+                    
+                @else
+                    <input type="{{ $field['type'] ?? 'text' }}" 
+                           name="{{ $field['name'] }}" 
+                           id="{{ $field['name'] }}"
+                           value="{{ request($field['name']) }}"
+                           placeholder="{{ $field['placeholder'] ?? '' }}"
+                           class="block w-full border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                @endif
+            </div>
+        @endforeach
+        
+        <!-- Per Page Selection -->
+        <div>
+            <label for="per_page" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Per Page
+            </label>
+            <select name="per_page" 
+                    id="per_page" 
+                    class="block w-full border border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors">
+                <option value="10" {{ request('per_page') == '10' ? 'selected' : '' }}>10</option>
+                <option value="25" {{ request('per_page') == '25' ? 'selected' : '' }}>25</option>
+                <option value="50" {{ request('per_page') == '50' ? 'selected' : '' }}>50</option>
+                <option value="100" {{ request('per_page') == '100' ? 'selected' : '' }}>100</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mt-4">
+        @if($showSubmit)
+            <button type="submit" 
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Search
+            </button>
+        @endif
+        
+        @if($showReset)
+            <button type="button" 
+                    onclick="resetSearchForm()"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Reset
+            </button>
+        @endif
+        
+        @if(request()->hasAny(['search', 'status', 'sort']) || collect($fields)->some(fn($field) => request($field['name'])))
+            <a href="{{ $action }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Clear Filters
+            </a>
+        @endif
+    </div>
+    
+    <!-- Advanced Search Toggle -->
+    @if(count($fields) > 3)
+        <div class="mt-4">
+            <button type="button" 
+                    onclick="toggleAdvancedSearch()"
+                    class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
+                <span id="advanced-toggle-text">Show Advanced Filters</span>
+                <svg class="w-4 h-4 ml-1 inline transition-transform" id="advanced-toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+        </div>
+    @endif
+</form>
+
+@push('scripts')
+<script>
+function resetSearchForm() {
+    // Get the form
+    const form = document.querySelector('form');
+    
+    // Reset all form fields
+    form.reset();
+    
+    // For select elements, ensure they show the first option
+    form.querySelectorAll('select').forEach(select => {
+        select.selectedIndex = 0;
+    });
+    
+    // For checkboxes, ensure they're unchecked
+    form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Optionally submit the form immediately to clear results
+    // form.submit();
+}
+
+function toggleAdvancedSearch() {
+    const advancedFields = document.querySelectorAll('.advanced-field');
+    const toggleText = document.getElementById('advanced-toggle-text');
+    const toggleIcon = document.getElementById('advanced-toggle-icon');
+    
+    advancedFields.forEach(field => {
+        field.classList.toggle('hidden');
+    });
+    
+    if (toggleText.textContent.includes('Show')) {
+        toggleText.textContent = 'Hide Advanced Filters';
+        toggleIcon.style.transform = 'rotate(180deg)';
+    } else {
+        toggleText.textContent = 'Show Advanced Filters';
+        toggleIcon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Auto-submit search with debounce
+document.addEventListener('DOMContentLoaded', function() {
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500); // 500ms delay
+        });
+    }
+    
+    // Auto-submit on select changes
+    const selectElements = document.querySelectorAll('select');
+    selectElements.forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+    
+    // Auto-submit on checkbox changes
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
+@endpush

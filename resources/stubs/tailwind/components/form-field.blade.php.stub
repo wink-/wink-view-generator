@@ -1,0 +1,721 @@
+@props([
+    'name',
+    'label',
+    'type' => 'text',
+    'value' => '',
+    'required' => false,
+    'placeholder' => '',
+    'help' => '',
+    'options' => [],
+    'attributes' => [],
+    'model' => null,
+    'readonly' => false,
+    'disabled' => false,
+    'multiple' => false,
+    'accept' => '',
+    'min' => '',
+    'max' => '',
+    'step' => '',
+    'rows' => 4,
+    'cols' => '',
+    'maxlength' => '',
+    'pattern' => '',
+    'autocomplete' => '',
+    'class' => ''
+])
+
+@php
+    $fieldId = $attributes['id'] ?? $name;
+    $fieldClass = 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors';
+    $containerClass = '';
+    $hasError = $errors->has($name);
+    $fieldValue = old($name, $value);
+    
+    // Handle different field types
+    if ($type === 'checkbox') {
+        $fieldClass = 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-500 dark:ring-offset-gray-800 transition-colors';
+    } elseif ($type === 'radio') {
+        $fieldClass = 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-500 dark:ring-offset-gray-800 transition-colors';
+    } elseif ($type === 'select') {
+        $fieldClass = 'block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors';
+    } elseif ($type === 'file') {
+        $fieldClass = 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900 dark:file:text-blue-300 dark:hover:file:bg-blue-800 transition-colors';
+    } elseif ($type === 'range') {
+        $fieldClass = 'w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all';
+    }
+    
+    // Add custom classes
+    if ($class) {
+        $fieldClass .= ' ' . $class;
+    }
+    
+    // Add validation classes
+    if ($hasError) {
+        $fieldClass = str_replace('border-gray-300 dark:border-gray-600', 'border-red-300 dark:border-red-600', $fieldClass);
+        $fieldClass = str_replace('focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500', 'focus:ring-red-500 focus:border-red-500 dark:focus:ring-red-500 dark:focus:border-red-500', $fieldClass);
+    } elseif (old($name) !== null && !$hasError) {
+        $fieldClass = str_replace('border-gray-300 dark:border-gray-600', 'border-green-300 dark:border-green-600', $fieldClass);
+        $fieldClass = str_replace('focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-500 dark:focus:border-blue-500', 'focus:ring-green-500 focus:border-green-500 dark:focus:ring-green-500 dark:focus:border-green-500', $fieldClass);
+    }
+    
+    // Merge additional attributes
+    $fieldAttributes = array_merge([
+        'class' => $fieldClass,
+        'id' => $fieldId,
+        'name' => $name,
+        'data-label' => $label,
+    ], $attributes);
+    
+    if ($required) {
+        $fieldAttributes['required'] = true;
+        $fieldAttributes['aria-required'] = 'true';
+    }
+    
+    if ($readonly) {
+        $fieldAttributes['readonly'] = true;
+    }
+    
+    if ($disabled) {
+        $fieldAttributes['disabled'] = true;
+    }
+    
+    if ($placeholder) {
+        $fieldAttributes['placeholder'] = $placeholder;
+    }
+    
+    if ($maxlength) {
+        $fieldAttributes['maxlength'] = $maxlength;
+    }
+    
+    if ($pattern) {
+        $fieldAttributes['pattern'] = $pattern;
+    }
+    
+    if ($autocomplete) {
+        $fieldAttributes['autocomplete'] = $autocomplete;
+    }
+    
+    if ($help) {
+        $fieldAttributes['aria-describedby'] = $fieldId . '-help';
+    }
+    
+    // Type-specific attributes
+    if (in_array($type, ['number', 'range'])) {
+        if ($min !== '') $fieldAttributes['min'] = $min;
+        if ($max !== '') $fieldAttributes['max'] = $max;
+        if ($step !== '') $fieldAttributes['step'] = $step;
+    }
+    
+    if ($type === 'file') {
+        if ($accept) $fieldAttributes['accept'] = $accept;
+        if ($multiple) $fieldAttributes['multiple'] = true;
+    }
+    
+    if ($type === 'textarea') {
+        if ($rows) $fieldAttributes['rows'] = $rows;
+        if ($cols) $fieldAttributes['cols'] = $cols;
+    }
+@endphp
+
+<div class="{{ $containerClass }}">
+    @if($type === 'checkbox')
+        <div class="relative flex items-start">
+            <div class="flex items-center h-5">
+                <input type="hidden" name="{{ $name }}" value="0">
+                <input 
+                    type="checkbox" 
+                    value="1"
+                    {{ $fieldValue ? 'checked' : '' }}
+                    {!! html_attributes($fieldAttributes) !!}>
+            </div>
+            <div class="ml-3 text-sm">
+                <label for="{{ $fieldId }}" class="font-medium text-gray-700 dark:text-gray-300">
+                    {{ $label }}
+                    @if($required)
+                        <span class="text-red-500" aria-label="required">*</span>
+                    @endif
+                </label>
+                @if($help)
+                    <p id="{{ $fieldId }}-help" class="text-gray-500 dark:text-gray-400 mt-1">{{ $help }}</p>
+                @endif
+            </div>
+        </div>
+    @elseif($type === 'radio' && !empty($options))
+        <fieldset>
+            <legend class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ $label }}
+                @if($required)
+                    <span class="text-red-500" aria-label="required">*</span>
+                @endif
+            </legend>
+            <div class="mt-2 space-y-2">
+                @foreach($options as $optionValue => $optionLabel)
+                    <div class="relative flex items-start">
+                        <div class="flex items-center h-5">
+                            <input 
+                                type="radio" 
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-500 dark:ring-offset-gray-800 transition-colors {{ $hasError ? 'border-red-300 dark:border-red-600' : '' }}"
+                                id="{{ $fieldId }}_{{ $loop->index }}"
+                                name="{{ $name }}" 
+                                value="{{ $optionValue }}"
+                                {{ $fieldValue == $optionValue ? 'checked' : '' }}
+                                {{ $required ? 'required' : '' }}
+                                {{ $disabled ? 'disabled' : '' }}>
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ $fieldId }}_{{ $loop->index }}" class="font-medium text-gray-700 dark:text-gray-300">
+                                {{ $optionLabel }}
+                            </label>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </fieldset>
+    @else
+        <label for="{{ $fieldId }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            {{ $label }}
+            @if($required)
+                <span class="text-red-500" aria-label="required">*</span>
+            @endif
+        </label>
+        
+        @if($type === 'select')
+            <select {!! html_attributes($fieldAttributes) !!}>
+                @if(!$required || !$fieldValue)
+                    <option value="">{{ $placeholder ?: 'Choose ' . strtolower($label) . '...' }}</option>
+                @endif
+                
+                @foreach($options as $optionValue => $optionLabel)
+                    @if(is_array($optionLabel))
+                        <!-- Optgroup -->
+                        <optgroup label="{{ $optionValue }}">
+                            @foreach($optionLabel as $groupValue => $groupLabel)
+                                <option 
+                                    value="{{ $groupValue }}" 
+                                    {{ $fieldValue == $groupValue ? 'selected' : '' }}>
+                                    {{ $groupLabel }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    @else
+                        <option 
+                            value="{{ $optionValue }}" 
+                            {{ $fieldValue == $optionValue ? 'selected' : '' }}>
+                            {{ $optionLabel }}
+                        </option>
+                    @endif
+                @endforeach
+            </select>
+            
+        @elseif($type === 'textarea')
+            <textarea {!! html_attributes($fieldAttributes) !!}>{{ $fieldValue }}</textarea>
+            
+        @elseif($type === 'file')
+            <input 
+                type="file"
+                {!! html_attributes($fieldAttributes) !!}>
+                
+            <!-- File Preview Container -->
+            <div class="file-preview mt-3">
+                @if($model && $model->{$name})
+                    @if(Str::startsWith(Storage::mimeType($model->{$name}), 'image/'))
+                        <div class="current-file">
+                            <div class="relative">
+                                <img src="{{ Storage::url($model->{$name}) }}" 
+                                     alt="Current {{ $label }}" 
+                                     class="h-32 w-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div class="absolute -top-2 -right-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                        Current
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="current-file">
+                            <div class="flex items-center p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+                                <svg class="h-8 w-8 text-gray-400 dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                                        {{ basename($model->{$name}) }}
+                                    </p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Current file</p>
+                                </div>
+                                <a href="{{ Storage::url($model->{$name}) }}" 
+                                   target="_blank" 
+                                   class="ml-3 inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+            </div>
+            
+            <!-- Drag and Drop Zone -->
+            <div class="mt-3">
+                <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 transition-colors" 
+                     id="{{ $fieldId }}-drop-zone">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                            <label for="{{ $fieldId }}" class="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 dark:focus-within:ring-offset-gray-800 transition-colors">
+                                <span>Upload a file</span>
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        @if($accept)
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ str_replace(',', ', ', $accept) }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+        @elseif($type === 'color')
+            <div class="flex rounded-md shadow-sm">
+                <input 
+                    type="color"
+                    {!! html_attributes(array_merge($fieldAttributes, ['class' => 'h-10 w-16 rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 cursor-pointer'])) !!}
+                    value="{{ $fieldValue }}">
+                <input 
+                    type="text"
+                    class="flex-1 block w-full px-3 py-2 border border-gray-300 rounded-none rounded-r-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 sm:text-sm transition-colors"
+                    value="{{ $fieldValue }}"
+                    placeholder="#000000"
+                    pattern="^#[0-9A-Fa-f]{6}$"
+                    onchange="document.getElementById('{{ $fieldId }}').value = this.value">
+            </div>
+            
+        @elseif($type === 'range')
+            <div class="space-y-2">
+                <input 
+                    type="range"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}"
+                    oninput="document.getElementById('{{ $fieldId }}_output').textContent = this.value">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $min }}</span>
+                    <span id="{{ $fieldId }}_output" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        {{ $fieldValue }}
+                    </span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $max }}</span>
+                </div>
+            </div>
+            
+        @elseif($type === 'datetime-local')
+            <input 
+                type="datetime-local"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('Y-m-d\TH:i') : '' }}">
+                
+        @elseif($type === 'date')
+            <input 
+                type="date"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('Y-m-d') : '' }}">
+                
+        @elseif($type === 'time')
+            <input 
+                type="time"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('H:i') : '' }}">
+                
+        @elseif($type === 'password')
+            <div class="relative rounded-md shadow-sm">
+                <input 
+                    type="password"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <button type="button" 
+                            onclick="togglePassword('{{ $fieldId }}')"
+                            class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 focus:outline-none focus:text-gray-500 dark:focus:text-gray-400 transition-colors"
+                            aria-label="Toggle password visibility">
+                        <svg class="h-5 w-5" id="{{ $fieldId }}_icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+        @elseif($type === 'email')
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                    </svg>
+                </div>
+                <input 
+                    type="email"
+                    {!! html_attributes(array_merge($fieldAttributes, ['class' => str_replace('px-3', 'pl-10 pr-3', $fieldClass)])) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'tel')
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                    </svg>
+                </div>
+                <input 
+                    type="tel"
+                    {!! html_attributes(array_merge($fieldAttributes, ['class' => str_replace('px-3', 'pl-10 pr-3', $fieldClass)])) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'url')
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                    </svg>
+                </div>
+                <input 
+                    type="url"
+                    {!! html_attributes(array_merge($fieldAttributes, ['class' => str_replace('px-3', 'pl-10 pr-3', $fieldClass)])) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'currency')
+            <div class="relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 dark:text-gray-400 sm:text-sm">$</span>
+                </div>
+                <input 
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {!! html_attributes(array_merge($fieldAttributes, ['type' => 'number', 'class' => str_replace('px-3', 'pl-7 pr-3', $fieldClass)])) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'tags')
+            <div class="relative">
+                <input 
+                    type="text"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ is_array($fieldValue) ? implode(',', $fieldValue) : $fieldValue }}"
+                    data-role="tagsinput"
+                    placeholder="Type and press Enter to add tags">
+                <div class="mt-2">
+                    <div id="{{ $fieldId }}-tags" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+                
+        @else
+            <input 
+                type="{{ $type }}"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue }}">
+        @endif
+    @endif
+    
+    <!-- Help Text -->
+    @if($help && !in_array($type, ['checkbox', 'radio']))
+        <p id="{{ $fieldId }}-help" class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {{ $help }}
+        </p>
+    @endif
+    
+    <!-- Character Counter -->
+    @if($maxlength && in_array($type, ['text', 'textarea', 'email', 'url']))
+        <div class="mt-1 text-right">
+            <span id="{{ $fieldId }}_counter" class="text-xs text-gray-500 dark:text-gray-400">
+                {{ strlen($fieldValue) }}/{{ $maxlength }} characters
+            </span>
+        </div>
+    @endif
+    
+    <!-- Validation Feedback -->
+    @if($hasError)
+        <div class="mt-2 text-sm text-red-600 dark:text-red-400">
+            {{ $errors->first($name) }}
+        </div>
+    @endif
+    
+    @if(old($name) !== null && !$hasError)
+        <div class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center">
+            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Looks good!
+        </div>
+    @endif
+</div>
+
+@once
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    document.querySelectorAll('input[maxlength], textarea[maxlength]').forEach(field => {
+        const maxLength = parseInt(field.getAttribute('maxlength'));
+        const counter = document.getElementById(field.id + '_counter');
+        
+        if (counter && maxLength) {
+            field.addEventListener('input', function() {
+                const remaining = maxLength - this.value.length;
+                counter.textContent = `${this.value.length}/${maxLength} characters`;
+                
+                // Update color based on remaining characters
+                counter.className = 'text-xs';
+                if (remaining < maxLength * 0.1) {
+                    counter.classList.add('text-red-500', 'dark:text-red-400');
+                } else if (remaining < maxLength * 0.2) {
+                    counter.classList.add('text-yellow-500', 'dark:text-yellow-400');
+                } else {
+                    counter.classList.add('text-gray-500', 'dark:text-gray-400');
+                }
+            });
+        }
+    });
+    
+    // File upload drag and drop
+    document.querySelectorAll('[id$="-drop-zone"]').forEach(dropZone => {
+        const fileInput = dropZone.closest('.file-preview').previousElementSibling;
+        
+        if (fileInput && fileInput.type === 'file') {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('border-blue-400', 'bg-blue-50', 'dark:border-blue-500', 'dark:bg-blue-900/20');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('border-blue-400', 'bg-blue-50', 'dark:border-blue-500', 'dark:bg-blue-900/20');
+                }, false);
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            }, false);
+        }
+    });
+    
+    // File upload preview
+    document.querySelectorAll('input[type="file"]').forEach(fileInput => {
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            const previewContainer = this.nextElementSibling;
+            
+            if (file && previewContainer) {
+                // Clear existing preview
+                const existingPreview = previewContainer.querySelector('.new-file-preview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'new-file-preview mt-3';
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewDiv.innerHTML = `
+                            <div class="relative">
+                                <img src="${e.target.result}" 
+                                     alt="Preview" 
+                                     class="h-32 w-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600">
+                                <div class="absolute -top-2 -right-2">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                        New
+                                    </span>
+                                </div>
+                                <button type="button" 
+                                        class="absolute top-1 right-1 inline-flex items-center justify-center w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                        onclick="clearFileInput('${this.id}')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewDiv.innerHTML = `
+                        <div class="flex items-center p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                            <svg class="h-8 w-8 text-green-500 dark:text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-green-800 dark:text-green-200">
+                                    ${file.name}
+                                </p>
+                                <p class="text-sm text-green-600 dark:text-green-300">New file selected</p>
+                            </div>
+                            <button type="button" 
+                                    class="ml-3 inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded text-green-700 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:text-green-200 dark:hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800 transition-colors"
+                                    onclick="clearFileInput('${this.id}')">
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                previewContainer.appendChild(previewDiv);
+            }
+        });
+    });
+    
+    // Tags input
+    document.querySelectorAll('[data-role="tagsinput"]').forEach(input => {
+        setupTagsInput(input);
+    });
+    
+    // Range input updates
+    document.querySelectorAll('input[type="range"]').forEach(range => {
+        const output = document.getElementById(range.id + '_output');
+        if (output) {
+            range.addEventListener('input', function() {
+                output.textContent = this.value;
+            });
+        }
+    });
+    
+    // Color input sync
+    document.querySelectorAll('input[type="color"]').forEach(colorInput => {
+        const textInput = colorInput.nextElementSibling;
+        if (textInput && textInput.type === 'text') {
+            colorInput.addEventListener('change', function() {
+                textInput.value = this.value;
+            });
+            
+            textInput.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                    colorInput.value = this.value;
+                }
+            });
+        }
+    });
+});
+
+// Helper functions
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + '_icon');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878l-1.414-1.414m5.657 5.657L20.536 18M5.464 5.464L18 18"/>
+        `;
+    } else {
+        field.type = 'password';
+        icon.innerHTML = `
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        `;
+    }
+}
+
+function clearFileInput(fieldId) {
+    const input = document.getElementById(fieldId);
+    const preview = input.nextElementSibling.querySelector('.new-file-preview');
+    
+    input.value = '';
+    if (preview) {
+        preview.remove();
+    }
+}
+
+function setupTagsInput(input) {
+    const container = document.getElementById(input.id + '-tags');
+    let tags = input.value ? input.value.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+    
+    function renderTags() {
+        container.innerHTML = '';
+        tags.forEach((tag, index) => {
+            const tagElement = document.createElement('span');
+            tagElement.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+            tagElement.innerHTML = `
+                ${tag}
+                <button type="button" 
+                        class="ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 dark:text-blue-300 dark:hover:bg-blue-800 dark:hover:text-blue-200 focus:outline-none focus:bg-blue-500 focus:text-white dark:focus:bg-blue-600 transition-colors"
+                        onclick="removeTag(${index}, '${input.id}')">
+                    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+                        <path stroke-linecap="round" stroke-width="1.5" d="m1 1 6 6m0-6-6 6"/>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(tagElement);
+        });
+        
+        input.value = tags.join(',');
+    }
+    
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const value = this.value.trim();
+            if (value && !tags.includes(value)) {
+                tags.push(value);
+                renderTags();
+                this.value = '';
+            }
+        } else if (e.key === 'Backspace' && this.value === '' && tags.length > 0) {
+            e.preventDefault();
+            tags.pop();
+            renderTags();
+        }
+    });
+    
+    // Make removeTag function available globally for this input
+    window[`removeTag_${input.id}`] = function(index) {
+        tags.splice(index, 1);
+        renderTags();
+    };
+    
+    // Global removeTag function that uses the input id
+    if (!window.removeTag) {
+        window.removeTag = function(index, inputId) {
+            window[`removeTag_${inputId}`](index);
+        };
+    }
+    
+    renderTags();
+}
+</script>
+@endpush
+@endonce
+
+@php
+function html_attributes($attributes) {
+    $html = [];
+    foreach ($attributes as $key => $value) {
+        if (is_bool($value)) {
+            if ($value) {
+                $html[] = $key;
+            }
+        } elseif ($value !== null && $value !== '') {
+            $html[] = $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+        }
+    }
+    return implode(' ', $html);
+}
+@endphp

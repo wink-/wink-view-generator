@@ -1,0 +1,836 @@
+@props([
+    'data',
+    'columns' => [],
+    'searchable' => true,
+    'sortable' => true,
+    'filterable' => true,
+    'exportable' => true,
+    'selectable' => true,
+    'pagination' => true,
+    'perPageOptions' => [10, 25, 50, 100],
+    'defaultPerPage' => 25,
+    'actions' => [],
+    'bulkActions' => [],
+    'emptyMessage' => 'No data found',
+    'tableClass' => 'table table-hover',
+    'containerClass' => 'table-responsive',
+    'showInfo' => true,
+    'showPageSize' => true,
+    'routePrefix' => '',
+    'modelName' => '',
+    'idField' => 'id',
+    'filters' => []
+])
+
+@php
+    $currentSort = request('sort');
+    $currentDirection = request('direction', 'asc');
+    $currentSearch = request('search');
+    $currentPerPage = request('per_page', $defaultPerPage);
+    $hasData = $data && ($data instanceof \Illuminate\Contracts\Pagination\Paginator ? $data->count() > 0 : count($data) > 0);
+@endphp
+
+<div class="data-table-container">
+    <!-- Search and Filters -->
+    @if($searchable || $filterable || $showPageSize)
+        <div class="data-table-controls mb-3">
+            <form method="GET" class="row g-3" id="data-table-form">
+                @if($searchable)
+                    <div class="col-md-4">
+                        <label for="search" class="form-label visually-hidden">Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="search"
+                                   name="search" 
+                                   placeholder="Search {{ $modelName ?: 'records' }}..."
+                                   value="{{ $currentSearch }}"
+                                   autocomplete="off">
+                            @if($currentSearch)
+                                <button class="btn btn-outline-secondary" 
+                                        type="button"
+                                        onclick="clearSearch()"
+                                        aria-label="Clear search">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+                
+                @if($filterable && !empty($filters))
+                    @foreach($filters as $filter)
+                        <div class="col-md-3">
+                            <label for="{{ $filter['name'] }}" class="form-label">{{ $filter['label'] }}</label>
+                            <select name="{{ $filter['name'] }}" 
+                                    id="{{ $filter['name'] }}" 
+                                    class="form-select"
+                                    onchange="this.form.submit()">
+                                <option value="">All {{ $filter['label'] }}</option>
+                                @foreach($filter['options'] as $value => $label)
+                                    <option value="{{ $value }}" 
+                                            {{ request($filter['name']) == $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endforeach
+                @endif
+                
+                @if($showPageSize)
+                    <div class="col-md-2">
+                        <label for="per_page" class="form-label">Per Page</label>
+                        <select name="per_page" 
+                                id="per_page" 
+                                class="form-select"
+                                onchange="this.form.submit()">
+                            @foreach($perPageOptions as $option)
+                                <option value="{{ $option }}" 
+                                        {{ $currentPerPage == $option ? 'selected' : '' }}>
+                                    {{ $option }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="btn-group w-100" role="group">
+                        @if($searchable)
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-search me-1"></i>
+                                Search
+                            </button>
+                        @endif
+                        
+                        @if($exportable)
+                            <div class="btn-group" role="group">
+                                <button type="button" 
+                                        class="btn btn-outline-secondary dropdown-toggle" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false">
+                                    <i class="bi bi-download me-1"></i>
+                                    Export
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="exportData('csv')">
+                                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>CSV
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="exportData('xlsx')">
+                                        <i class="bi bi-file-earmark-excel me-2"></i>Excel
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="exportData('pdf')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>PDF
+                                    </a></li>
+                                </ul>
+                            </div>
+                        @endif
+                        
+                        @if(request()->hasAny(['search', 'sort', 'direction']) || 
+                            ($filterable && collect($filters)->some(fn($filter) => request($filter['name']))))
+                            <button type="button" 
+                                    class="btn btn-outline-secondary"
+                                    onclick="clearAllFilters()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                Reset
+                            </button>
+                        @endif
+                    </div>
+                </div>
+                
+                <!-- Hidden inputs to preserve other parameters -->
+                @foreach(request()->except(['search', 'per_page'] + collect($filters)->pluck('name')->toArray()) as $key => $value)
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endforeach
+            </form>
+        </div>
+    @endif
+
+    <!-- Bulk Actions -->
+    @if($selectable && !empty($bulkActions))
+        <div class="bulk-actions-bar bg-light p-3 rounded mb-3 d-none" id="bulk-actions">
+            <div class="row align-items-center">
+                <div class="col">
+                    <span class="text-muted">
+                        <span id="selected-count">0</span> item(s) selected
+                    </span>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group" role="group">
+                        @foreach($bulkActions as $action)
+                            <button type="button" 
+                                    class="btn btn-outline-{{ $action['variant'] ?? 'primary' }} btn-sm"
+                                    onclick="{{ $action['onclick'] ?? 'performBulkAction(\'' . $action['action'] . '\')' }}"
+                                    title="{{ $action['title'] ?? '' }}">
+                                @if(isset($action['icon']))
+                                    <i class="bi bi-{{ $action['icon'] }} me-1"></i>
+                                @endif
+                                {{ $action['label'] }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Data Table -->
+    <div class="{{ $containerClass }}">
+        <table class="{{ $tableClass }}" role="table" aria-label="{{ $modelName }} data table">
+            <thead class="table-light">
+                <tr>
+                    @if($selectable)
+                        <th scope="col" width="50">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="select-all"
+                                       aria-label="Select all items">
+                            </div>
+                        </th>
+                    @endif
+                    
+                    @foreach($columns as $column)
+                        @php
+                            $sortKey = $column['sort_key'] ?? $column['key'] ?? '';
+                            $isSortable = $sortable && ($column['sortable'] ?? true) && $sortKey;
+                            $isCurrentSort = $currentSort === $sortKey;
+                        @endphp
+                        
+                        <th scope="col" 
+                            class="{{ $isSortable ? 'sortable' : '' }}"
+                            @if(isset($column['width'])) style="width: {{ $column['width'] }}" @endif>
+                            @if($isSortable)
+                                <a href="{{ request()->fullUrlWithQuery([
+                                    'sort' => $sortKey, 
+                                    'direction' => $isCurrentSort && $currentDirection == 'asc' ? 'desc' : 'asc'
+                                ]) }}" 
+                                   class="text-decoration-none text-dark d-flex align-items-center"
+                                   aria-label="Sort by {{ $column['label'] }}">
+                                    {{ $column['label'] }}
+                                    @if($isCurrentSort)
+                                        <i class="bi bi-chevron-{{ $currentDirection == 'asc' ? 'up' : 'down' }} ms-1" aria-hidden="true"></i>
+                                    @else
+                                        <i class="bi bi-chevron-expand ms-1 text-muted" aria-hidden="true"></i>
+                                    @endif
+                                </a>
+                            @else
+                                {{ $column['label'] }}
+                            @endif
+                        </th>
+                    @endforeach
+                    
+                    @if(!empty($actions))
+                        <th scope="col" width="150" class="text-center">Actions</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody>
+                @if($hasData)
+                    @foreach($data as $item)
+                        <tr data-id="{{ $item->{$idField} }}">
+                            @if($selectable)
+                                <td>
+                                    <div class="form-check">
+                                        <input class="form-check-input row-select" 
+                                               type="checkbox" 
+                                               value="{{ $item->{$idField} }}"
+                                               aria-label="Select {{ $item->{$columns[0]['key'] ?? 'item'} ?? 'item' }}">
+                                    </div>
+                                </td>
+                            @endif
+                            
+                            @foreach($columns as $column)
+                                <td data-label="{{ $column['label'] }}">
+                                    @if(isset($column['component']))
+                                        @include($column['component'], ['item' => $item, 'column' => $column])
+                                    @elseif(isset($column['format']))
+                                        {!! $column['format']($item) !!}
+                                    @else
+                                        @php
+                                            $value = data_get($item, $column['key'], '');
+                                            $type = $column['type'] ?? 'text';
+                                        @endphp
+                                        
+                                        @if($type === 'image')
+                                            @if($value)
+                                                <img src="{{ asset($value) }}" 
+                                                     alt="{{ $column['label'] }}" 
+                                                     class="rounded table-image"
+                                                     style="width: 40px; height: 40px; object-fit: cover;"
+                                                     data-bs-toggle="modal" 
+                                                     data-bs-target="#imageModal"
+                                                     data-image-src="{{ asset($value) }}"
+                                                     style="cursor: pointer;">
+                                            @else
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                                     style="width: 40px; height: 40px;">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                </div>
+                                            @endif
+                                            
+                                        @elseif($type === 'badge' || $type === 'status')
+                                            @php
+                                                $badgeClass = $column['badge_map'][$value] ?? 'secondary';
+                                                if ($type === 'status') {
+                                                    $badgeClass = $value == 'active' ? 'success' : ($value == 'inactive' ? 'secondary' : 'warning');
+                                                }
+                                            @endphp
+                                            <span class="badge bg-{{ $badgeClass }}">
+                                                {{ $column['value_map'][$value] ?? ucfirst($value) }}
+                                            </span>
+                                            
+                                        @elseif($type === 'boolean')
+                                            <span class="badge bg-{{ $value ? 'success' : 'secondary' }}">
+                                                <i class="bi bi-{{ $value ? 'check' : 'x' }} me-1"></i>
+                                                {{ $value ? 'Yes' : 'No' }}
+                                            </span>
+                                            
+                                        @elseif($type === 'date')
+                                            @if($value)
+                                                <span title="{{ \Carbon\Carbon::parse($value)->format('M d, Y g:i A') }}">
+                                                    {{ \Carbon\Carbon::parse($value)->format($column['date_format'] ?? 'M d, Y') }}
+                                                </span>
+                                            @endif
+                                            
+                                        @elseif($type === 'currency')
+                                            ${{ number_format($value, $column['decimals'] ?? 2) }}
+                                            
+                                        @elseif($type === 'link')
+                                            @if($value)
+                                                <a href="{{ $column['link_prefix'] ?? '' }}{{ $value }}" 
+                                                   target="{{ $column['link_target'] ?? '_blank' }}"
+                                                   class="text-decoration-none">
+                                                    {{ Str::limit($value, $column['limit'] ?? 30) }}
+                                                    <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                                </a>
+                                            @endif
+                                            
+                                        @elseif($type === 'email')
+                                            @if($value)
+                                                <a href="mailto:{{ $value }}" class="text-decoration-none">
+                                                    <i class="bi bi-envelope me-1"></i>
+                                                    {{ Str::limit($value, $column['limit'] ?? 30) }}
+                                                </a>
+                                            @endif
+                                            
+                                        @elseif($type === 'phone')
+                                            @if($value)
+                                                <a href="tel:{{ $value }}" class="text-decoration-none">
+                                                    <i class="bi bi-telephone me-1"></i>
+                                                    {{ $value }}
+                                                </a>
+                                            @endif
+                                            
+                                        @elseif($type === 'count')
+                                            <span class="badge bg-primary">{{ $value }}</span>
+                                            
+                                        @elseif($type === 'progress')
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" 
+                                                     role="progressbar" 
+                                                     style="width: {{ $value }}%"
+                                                     aria-valuenow="{{ $value }}" 
+                                                     aria-valuemin="0" 
+                                                     aria-valuemax="100">
+                                                    {{ $value }}%
+                                                </div>
+                                            </div>
+                                            
+                                        @else
+                                            {{ Str::limit($value, $column['limit'] ?? 50) }}
+                                        @endif
+                                    @endif
+                                </td>
+                            @endforeach
+                            
+                            @if(!empty($actions))
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Actions">
+                                        @foreach($actions as $action)
+                                            @php
+                                                $route = $action['route'] ?? '';
+                                                $url = $route ? route($route, $item) : ($action['url'] ?? '#');
+                                                $method = $action['method'] ?? 'GET';
+                                                $confirm = $action['confirm'] ?? '';
+                                            @endphp
+                                            
+                                            @if($method === 'GET')
+                                                <a href="{{ $url }}" 
+                                                   class="btn btn-sm btn-outline-{{ $action['variant'] ?? 'primary' }}"
+                                                   title="{{ $action['title'] ?? $action['label'] }}"
+                                                   @if($confirm) onclick="return confirm('{{ $confirm }}')" @endif>
+                                                    @if(isset($action['icon']))
+                                                        <i class="bi bi-{{ $action['icon'] }}" aria-hidden="true"></i>
+                                                    @endif
+                                                    @if(isset($action['show_label']) && $action['show_label'])
+                                                        {{ $action['label'] }}
+                                                    @endif
+                                                </a>
+                                            @else
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-{{ $action['variant'] ?? 'danger' }}"
+                                                        title="{{ $action['title'] ?? $action['label'] }}"
+                                                        onclick="{{ $action['onclick'] ?? 'performAction(\'' . $url . '\', \'' . $method . '\', \'' . $confirm . '\')' }}">
+                                                    @if(isset($action['icon']))
+                                                        <i class="bi bi-{{ $action['icon'] }}" aria-hidden="true"></i>
+                                                    @endif
+                                                    @if(isset($action['show_label']) && $action['show_label'])
+                                                        {{ $action['label'] }}
+                                                    @endif
+                                                </button>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </td>
+                            @endif
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="{{ count($columns) + ($selectable ? 1 : 0) + (!empty($actions) ? 1 : 0) }}" 
+                            class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox display-1 d-block mb-3"></i>
+                                <h5>{{ $emptyMessage }}</h5>
+                                @if(request()->hasAny(['search']) || 
+                                    ($filterable && collect($filters)->some(fn($filter) => request($filter['name']))))
+                                    <p>Try adjusting your search or filter criteria.</p>
+                                    <button type="button" 
+                                            class="btn btn-outline-primary"
+                                            onclick="clearAllFilters()">
+                                        <i class="bi bi-arrow-clockwise me-1"></i>
+                                        Clear Filters
+                                    </button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination and Info -->
+    @if($pagination && $hasData && method_exists($data, 'hasPages'))
+        <div class="data-table-footer">
+            <div class="row align-items-center">
+                @if($showInfo)
+                    <div class="col-md-6">
+                        <p class="mb-0 text-muted small">
+                            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} 
+                            of {{ $data->total() }} results
+                        </p>
+                    </div>
+                @endif
+                <div class="col-md-6">
+                    {{ $data->withQueryString()->links('pagination::bootstrap-4') }}
+                </div>
+            </div>
+        </div>
+    @endif
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" id="modalImage" class="img-fluid" alt="Image preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+@once
+@push('styles')
+<style>
+.data-table-container .table-responsive {
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+.data-table-container .table {
+    margin-bottom: 0;
+}
+
+.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable:hover {
+    background-color: rgba(0, 0, 0, 0.025);
+}
+
+.table-image {
+    transition: transform 0.2s ease;
+}
+
+.table-image:hover {
+    transform: scale(1.1);
+}
+
+.bulk-actions-bar {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.data-table-controls .btn-group .btn {
+    border-radius: 0;
+}
+
+.data-table-controls .btn-group .btn:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+.data-table-controls .btn-group .btn:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+@media (max-width: 768px) {
+    .data-table-container .table-responsive table,
+    .data-table-container .table-responsive thead,
+    .data-table-container .table-responsive tbody,
+    .data-table-container .table-responsive th,
+    .data-table-container .table-responsive td,
+    .data-table-container .table-responsive tr {
+        display: block;
+    }
+    
+    .data-table-container .table-responsive thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .data-table-container .table-responsive tr {
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        background: white;
+    }
+    
+    .data-table-container .table-responsive td {
+        border: none;
+        position: relative;
+        padding-left: 50% !important;
+        text-align: left;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    
+    .data-table-container .table-responsive td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        text-align: left;
+        font-weight: bold;
+        color: #666;
+    }
+    
+    .data-table-controls .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .data-table-footer .row > div {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.data-table-container {
+    position: relative;
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDataTable();
+});
+
+function initializeDataTable() {
+    // Select all functionality
+    const selectAllCheckbox = document.getElementById('select-all');
+    const rowCheckboxes = document.querySelectorAll('.row-select');
+    const bulkActionsDiv = document.getElementById('bulk-actions');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateBulkActions();
+        });
+    });
+
+    function updateSelectAllState() {
+        if (!selectAllCheckbox) return;
+        
+        const checkedCount = document.querySelectorAll('.row-select:checked').length;
+        selectAllCheckbox.checked = checkedCount === rowCheckboxes.length && checkedCount > 0;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
+    }
+
+    function updateBulkActions() {
+        if (!bulkActionsDiv || !selectedCountSpan) return;
+        
+        const checkedCount = document.querySelectorAll('.row-select:checked').length;
+        selectedCountSpan.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+            bulkActionsDiv.classList.remove('d-none');
+        } else {
+            bulkActionsDiv.classList.add('d-none');
+        }
+    }
+
+    // Auto-submit search with delay
+    let searchTimeout;
+    const searchInput = document.getElementById('search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.form.submit();
+            }, 500);
+        });
+    }
+
+    // Image modal functionality
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    
+    if (imageModal && modalImage) {
+        imageModal.addEventListener('show.bs.modal', function(event) {
+            const trigger = event.relatedTarget;
+            const imageSrc = trigger.getAttribute('data-image-src');
+            modalImage.src = imageSrc;
+        });
+    }
+}
+
+// Global functions
+function clearSearch() {
+    const searchInput = document.getElementById('search');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.form.submit();
+    }
+}
+
+function clearAllFilters() {
+    const form = document.getElementById('data-table-form');
+    if (form) {
+        // Reset all form fields
+        form.reset();
+        
+        // Remove URL parameters
+        const url = new URL(window.location);
+        url.search = '';
+        window.location.href = url.toString();
+    }
+}
+
+function exportData(format) {
+    const selectedIds = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
+    const params = new URLSearchParams(window.location.search);
+    
+    if (selectedIds.length > 0) {
+        params.set('selected_ids', selectedIds.join(','));
+    }
+    
+    params.set('format', format);
+    
+    // Create form and submit
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ $routePrefix ? route($routePrefix . '.export') : '/export' }}';
+    
+    // CSRF token
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
+    form.appendChild(csrfToken);
+    
+    // Add all current parameters
+    for (const [key, value] of params.entries()) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function performBulkAction(action) {
+    const selectedIds = Array.from(document.querySelectorAll('.row-select:checked')).map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        alert('Please select items to perform this action.');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to ${action} ${selectedIds.length} selected item(s)?`)) {
+        showLoading();
+        
+        fetch('{{ $routePrefix ? route($routePrefix . '.bulk-action') : '/bulk-action' }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: action,
+                ids: selectedIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showAlert('success', data.message || `${action} completed successfully`);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showAlert('danger', data.message || `Error performing ${action}`);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showAlert('danger', `An error occurred while performing ${action}`);
+            console.error('Error:', error);
+        });
+    }
+}
+
+function performAction(url, method, confirmMessage) {
+    if (confirmMessage && !confirm(confirmMessage)) {
+        return;
+    }
+    
+    if (method === 'GET') {
+        window.location.href = url;
+        return;
+    }
+    
+    showLoading();
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        
+        if (data.success) {
+            showAlert('success', data.message || 'Action completed successfully');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showAlert('danger', data.message || 'Error performing action');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('danger', 'An error occurred while performing the action');
+        console.error('Error:', error);
+    });
+}
+
+function showLoading() {
+    const container = document.querySelector('.data-table-container');
+    if (container && !container.querySelector('.loading-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        container.appendChild(overlay);
+    }
+}
+
+function hideLoading() {
+    const overlay = document.querySelector('.loading-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+// Alert helper
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            bootstrap.Alert.getInstance(alertDiv)?.close();
+        }
+    }, 5000);
+}
+</script>
+@endpush
+@endonce

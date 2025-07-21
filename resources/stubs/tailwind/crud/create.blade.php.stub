@@ -1,0 +1,911 @@
+@extends('layouts.{{layout}}')
+
+@section('title', 'Create {{modelNameSingular}}')
+
+@section('content')
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pt-6">
+            <div class="mb-4 sm:mb-0">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create {{modelNameSingular}}</h1>
+                <nav class="flex mt-2" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="{{ route('dashboard') }}" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                                </svg>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <a href="{{ route('{{routeName}}.index') }}" class="ml-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">{{modelNamePlural}}</a>
+                            </div>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="ml-1 text-gray-500 dark:text-gray-400">Create</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Validation Errors -->
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 dark:bg-red-900/20 dark:border-red-700" role="alert" aria-live="polite">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                            Please correct the following errors:
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                            <ul class="list-disc list-inside space-y-1">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button type="button" class="inline-flex text-red-400 hover:text-red-600 dark:text-red-300 dark:hover:text-red-100" onclick="this.parentElement.parentElement.parentElement.remove()">
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Main Form -->
+            <div class="lg:col-span-3">
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {{modelNameSingular}} Information
+                        </h2>
+                    </div>
+                    
+                    <form action="{{ route('{{routeName}}.store') }}" 
+                          method="POST" 
+                          enctype="multipart/form-data"
+                          id="{{modelNameSingularLower}}-form"
+                          novalidate
+                          class="space-y-6">
+                        @csrf
+                        
+                        <div class="px-6 py-6">
+                            <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                                {{#formFields}}
+                                <div class="{{#fullWidth}}sm:col-span-6{{/fullWidth}}{{^fullWidth}}sm:col-span-{{colSize}}{{/fullWidth}}">
+                                    @include('components.form-field', [
+                                        'name' => '{{name}}',
+                                        'label' => '{{label}}',
+                                        'type' => '{{type}}',
+                                        'value' => old('{{name}}', {{defaultValue}}),
+                                        'required' => {{required}},
+                                        'placeholder' => '{{placeholder}}',
+                                        'help' => '{{helpText}}',
+                                        'options' => {{options}},
+                                        'attributes' => {{attributes}}
+                                    ])
+                                </div>
+                                {{/formFields}}
+                            </div>
+                        </div>
+                        
+                        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between">
+                            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-3 sm:mb-0">
+                                <button type="submit" 
+                                        id="submit-btn"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="btn-text">Create {{modelNameSingular}}</span>
+                                    <svg class="animate-spin ml-2 h-4 w-4 text-white hidden" id="loading-spinner" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </button>
+                                
+                                <button type="submit" 
+                                        name="action" 
+                                        value="save_and_continue"
+                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    Save & Add Another
+                                </button>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                                <button type="button" 
+                                        onclick="resetForm()"
+                                        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Reset Form
+                                </button>
+                                
+                                <a href="{{ route('{{routeName}}.index') }}" 
+                                   class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Help Card -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Help & Tips
+                        </h3>
+                    </div>
+                    <div class="px-6 py-6 space-y-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">Required Fields</h4>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Fields marked with <span class="text-red-500">*</span> are required and must be filled out before you can save.
+                            </p>
+                        </div>
+                        
+                        {{#helpSections}}
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{title}}</h4>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{description}}</p>
+                        </div>
+                        {{/helpSections}}
+                        
+                        <div class="bg-blue-50 dark:bg-blue-900/20 rounded-md p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                                        You can save your progress at any time and continue editing later.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Validation Status -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 hidden" id="validation-status">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Form Status
+                        </h3>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div id="validation-summary">
+                            <!-- Validation status will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Data -->
+                {{#relatedData}}
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{icon}}"/>
+                            </svg>
+                            {{title}}
+                        </h3>
+                    </div>
+                    <div class="px-6 py-6">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{description}}</p>
+                        @can('create', {{relatedModelClass}}::class)
+                            <a href="{{ route('{{relatedRoute}}.create') }}" 
+                               target="_blank"
+                               class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                                Create {{relatedModelSingular}}
+                                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                </svg>
+                            </a>
+                        @endcan
+                    </div>
+                </div>
+                {{/relatedData}}
+
+                <!-- Auto-save Status -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                            </svg>
+                            Auto-save
+                        </h3>
+                    </div>
+                    <div class="px-6 py-6">
+                        <div class="flex items-center justify-between">
+                            <label for="auto-save-toggle" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Enable auto-save
+                            </label>
+                            <button type="button" 
+                                    id="auto-save-toggle"
+                                    class="bg-blue-600 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" 
+                                    role="switch" 
+                                    aria-checked="true">
+                                <span class="sr-only">Enable auto-save</span>
+                                <span class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out" id="toggle-button"></span>
+                            </button>
+                        </div>
+                        <div id="auto-save-status" class="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
+                            Auto-save is enabled
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unsaved Changes Modal -->
+<div class="fixed inset-0 z-50 overflow-y-auto hidden" id="unsavedChangesModal" aria-labelledby="unsavedChangesModalLabel" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="unsavedChangesModalLabel">
+                        Unsaved Changes
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            You have unsaved changes. Are you sure you want to leave without saving?
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" 
+                        onclick="saveForm()"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Save & Continue
+                </button>
+                <button type="button" 
+                        id="leave-anyway"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                    Leave Anyway
+                </button>
+                <button type="button" 
+                        onclick="closeModal('unsavedChangesModal')"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                    Stay
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Draft Saved Modal -->
+<div class="fixed inset-0 z-50 overflow-y-auto hidden" id="draftSavedModal" aria-hidden="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/20">
+                    <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                        Draft Saved
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Your changes have been saved successfully!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('{{modelNameSingularLower}}-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const autoSaveToggle = document.getElementById('auto-save-toggle');
+    const autoSaveStatus = document.getElementById('auto-save-status');
+    
+    let formChanged = false;
+    let autoSaveInterval;
+    let lastSavedData = {};
+    let autoSaveEnabled = true;
+
+    // Initialize form
+    initializeForm();
+    setupValidation();
+    setupAutoSave();
+    setupUnsavedChangesWarning();
+
+    function initializeForm() {
+        // Load any saved draft data
+        loadDraftData();
+        
+        // Setup file upload previews
+        setupFileUploads();
+        
+        // Setup character counters
+        setupCharacterCounters();
+        
+        // Setup dependent fields
+        setupDependentFields();
+        
+        // Setup auto-save toggle
+        setupAutoSaveToggle();
+    }
+
+    function setupAutoSaveToggle() {
+        autoSaveToggle.addEventListener('click', function() {
+            autoSaveEnabled = !autoSaveEnabled;
+            
+            if (autoSaveEnabled) {
+                this.classList.remove('bg-gray-200');
+                this.classList.add('bg-blue-600');
+                this.querySelector('#toggle-button').classList.remove('translate-x-0');
+                this.querySelector('#toggle-button').classList.add('translate-x-5');
+                this.setAttribute('aria-checked', 'true');
+                
+                startAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is enabled';
+                autoSaveStatus.className = 'mt-2 text-sm text-emerald-600 dark:text-emerald-400';
+            } else {
+                this.classList.remove('bg-blue-600');
+                this.classList.add('bg-gray-200');
+                this.querySelector('#toggle-button').classList.remove('translate-x-5');
+                this.querySelector('#toggle-button').classList.add('translate-x-0');
+                this.setAttribute('aria-checked', 'false');
+                
+                stopAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is disabled';
+                autoSaveStatus.className = 'mt-2 text-sm text-gray-500 dark:text-gray-400';
+            }
+        });
+    }
+
+    function setupValidation() {
+        // Real-time validation
+        form.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('blur', function() {
+                validateField(this);
+            });
+            
+            field.addEventListener('input', function() {
+                formChanged = true;
+                clearFieldError(this);
+                
+                // Debounced validation
+                clearTimeout(this.validationTimeout);
+                this.validationTimeout = setTimeout(() => {
+                    validateField(this);
+                }, 500);
+            });
+        });
+
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                submitForm(this);
+            }
+        });
+    }
+
+    function validateField(field) {
+        const fieldName = field.name;
+        const value = field.value.trim();
+        const isRequired = field.hasAttribute('required');
+        
+        // Clear previous validation state
+        field.classList.remove('border-green-300', 'border-red-300');
+        field.classList.add('border-gray-300', 'dark:border-gray-600');
+        
+        // Basic required validation
+        if (isRequired && !value) {
+            showFieldError(field, 'This field is required');
+            return false;
+        }
+        
+        // Type-specific validation
+        switch (field.type) {
+            case 'email':
+                if (value && !isValidEmail(value)) {
+                    showFieldError(field, 'Please enter a valid email address');
+                    return false;
+                }
+                break;
+                
+            case 'url':
+                if (value && !isValidUrl(value)) {
+                    showFieldError(field, 'Please enter a valid URL');
+                    return false;
+                }
+                break;
+                
+            case 'tel':
+                if (value && !isValidPhone(value)) {
+                    showFieldError(field, 'Please enter a valid phone number');
+                    return false;
+                }
+                break;
+                
+            case 'number':
+                const min = field.getAttribute('min');
+                const max = field.getAttribute('max');
+                const numValue = parseFloat(value);
+                
+                if (value && isNaN(numValue)) {
+                    showFieldError(field, 'Please enter a valid number');
+                    return false;
+                }
+                
+                if (min && numValue < parseFloat(min)) {
+                    showFieldError(field, `Value must be at least ${min}`);
+                    return false;
+                }
+                
+                if (max && numValue > parseFloat(max)) {
+                    showFieldError(field, `Value must be no more than ${max}`);
+                    return false;
+                }
+                break;
+        }
+        
+        // Pattern validation
+        const pattern = field.getAttribute('pattern');
+        if (pattern && value && !new RegExp(pattern).test(value)) {
+            const title = field.getAttribute('title') || 'Invalid format';
+            showFieldError(field, title);
+            return false;
+        }
+        
+        // Show success state
+        showFieldSuccess(field);
+        return true;
+    }
+
+    function validateForm() {
+        let isValid = true;
+        const fields = form.querySelectorAll('input, select, textarea');
+        
+        fields.forEach(field => {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+        
+        // Focus first invalid field
+        if (!isValid) {
+            const firstInvalid = form.querySelector('.border-red-300');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        return isValid;
+    }
+
+    function submitForm(form) {
+        // Show loading state
+        const spinner = document.getElementById('loading-spinner');
+        const btnText = document.querySelector('.btn-text');
+        
+        submitBtn.disabled = true;
+        spinner.classList.remove('hidden');
+        btnText.textContent = 'Creating...';
+        
+        // Submit form
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                formChanged = false;
+                clearDraftData();
+                
+                showAlert('success', data.message || '{{modelNameSingular}} created successfully');
+                
+                // Redirect based on action
+                const action = form.querySelector('[name="action"]:checked')?.value || 
+                              (event.submitter && event.submitter.value) || 'default';
+                
+                setTimeout(() => {
+                    if (action === 'save_and_continue') {
+                        location.reload();
+                    } else {
+                        window.location.href = data.redirect || '{{ route('{{routeName}}.index') }}';
+                    }
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            showAlert('error', error.message || 'An error occurred while creating the {{modelNameSingular}}');
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.disabled = false;
+            spinner.classList.add('hidden');
+            btnText.textContent = 'Create {{modelNameSingular}}';
+        });
+    }
+
+    function setupAutoSave() {
+        if (autoSaveEnabled) {
+            startAutoSave();
+        }
+    }
+
+    function startAutoSave() {
+        autoSaveInterval = setInterval(() => {
+            if (formChanged && autoSaveEnabled) {
+                saveDraft();
+            }
+        }, 30000); // Save every 30 seconds
+    }
+
+    function stopAutoSave() {
+        if (autoSaveInterval) {
+            clearInterval(autoSaveInterval);
+        }
+    }
+
+    function saveDraft() {
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        // Only save if data has changed
+        if (JSON.stringify(data) !== JSON.stringify(lastSavedData)) {
+            localStorage.setItem('{{modelNameSingularLower}}_create_draft', JSON.stringify(data));
+            lastSavedData = data;
+            formChanged = false;
+            
+            autoSaveStatus.textContent = 'Draft saved ' + new Date().toLocaleTimeString();
+            autoSaveStatus.className = 'mt-2 text-sm text-emerald-600 dark:text-emerald-400';
+            
+            // Show brief confirmation
+            showDraftSavedModal();
+        }
+    }
+
+    function loadDraftData() {
+        const draftData = localStorage.getItem('{{modelNameSingularLower}}_create_draft');
+        if (draftData) {
+            try {
+                const data = JSON.parse(draftData);
+                
+                // Only load if form is empty
+                const hasData = Array.from(form.elements).some(el => 
+                    el.type !== 'hidden' && el.type !== 'submit' && el.value.trim()
+                );
+                
+                if (!hasData) {
+                    Object.entries(data).forEach(([key, value]) => {
+                        const field = form.querySelector(`[name="${key}"]`);
+                        if (field && field.type !== 'file') {
+                            field.value = value;
+                        }
+                    });
+                    
+                    showAlert('info', 'Draft data has been restored');
+                }
+            } catch (e) {
+                console.error('Error loading draft data:', e);
+            }
+        }
+    }
+
+    function clearDraftData() {
+        localStorage.removeItem('{{modelNameSingularLower}}_create_draft');
+    }
+
+    function setupUnsavedChangesWarning() {
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        // Handle navigation links
+        document.querySelectorAll('a[href]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (formChanged && !this.href.includes('#')) {
+                    e.preventDefault();
+                    showModal('unsavedChangesModal');
+                    
+                    document.getElementById('leave-anyway').onclick = () => {
+                        formChanged = false;
+                        window.location.href = this.href;
+                    };
+                }
+            });
+        });
+    }
+
+    function setupFileUploads() {
+        form.querySelectorAll('input[type="file"]').forEach(fileInput => {
+            setupFileUpload(fileInput);
+        });
+    }
+
+    function setupFileUpload(fileInput) {
+        fileInput.addEventListener('change', function() {
+            formChanged = true;
+            // File upload preview logic would go here
+        });
+    }
+
+    function setupCharacterCounters() {
+        form.querySelectorAll('textarea[maxlength], input[maxlength]').forEach(field => {
+            const maxLength = parseInt(field.getAttribute('maxlength'));
+            if (maxLength) {
+                const counter = document.createElement('div');
+                counter.className = 'text-right text-xs text-gray-500 dark:text-gray-400 mt-1';
+                field.parentNode.appendChild(counter);
+                
+                function updateCounter() {
+                    const remaining = maxLength - field.value.length;
+                    counter.textContent = `${field.value.length}/${maxLength} characters`;
+                    
+                    counter.className = 'text-right text-xs mt-1';
+                    if (remaining < maxLength * 0.1) {
+                        counter.classList.add('text-red-500', 'dark:text-red-400');
+                    } else if (remaining < maxLength * 0.2) {
+                        counter.classList.add('text-yellow-500', 'dark:text-yellow-400');
+                    } else {
+                        counter.classList.add('text-gray-500', 'dark:text-gray-400');
+                    }
+                }
+                
+                field.addEventListener('input', updateCounter);
+                updateCounter();
+            }
+        });
+    }
+
+    function setupDependentFields() {
+        // Setup cascading dropdowns and dependent field logic
+        {{#dependentFields}}
+        const {{parentField}} = form.querySelector('[name="{{parentField}}"]');
+        const {{childField}} = form.querySelector('[name="{{childField}}"]');
+        
+        if ({{parentField}} && {{childField}}) {
+            {{parentField}}.addEventListener('change', function() {
+                updateDependentField('{{parentField}}', '{{childField}}', this.value);
+            });
+        }
+        {{/dependentFields}}
+    }
+
+    function updateDependentField(parentField, childField, parentValue) {
+        const childSelect = form.querySelector(`[name="${childField}"]`);
+        if (!childSelect) return;
+        
+        // Show loading state
+        childSelect.disabled = true;
+        childSelect.innerHTML = '<option>Loading...</option>';
+        
+        // Fetch dependent options
+        fetch(`/api/dependent-options/${parentField}/${childField}/${parentValue}`)
+            .then(response => response.json())
+            .then(data => {
+                childSelect.innerHTML = '<option value="">Choose...</option>';
+                data.forEach(option => {
+                    childSelect.innerHTML += `<option value="${option.value}">${option.label}</option>`;
+                });
+                childSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading dependent options:', error);
+                childSelect.innerHTML = '<option value="">Error loading options</option>';
+                childSelect.disabled = false;
+            });
+    }
+
+    // Helper functions
+    function showFieldError(field, message) {
+        field.classList.remove('border-gray-300', 'dark:border-gray-600', 'border-green-300');
+        field.classList.add('border-red-300');
+        
+        let feedback = field.parentNode.querySelector('.field-error');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'field-error text-sm text-red-600 dark:text-red-400 mt-1';
+            field.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+    }
+
+    function showFieldSuccess(field) {
+        field.classList.remove('border-gray-300', 'dark:border-gray-600', 'border-red-300');
+        field.classList.add('border-green-300');
+        
+        const feedback = field.parentNode.querySelector('.field-error');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('border-red-300');
+        field.classList.add('border-gray-300', 'dark:border-gray-600');
+        const feedback = field.parentNode.querySelector('.field-error');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidUrl(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function isValidPhone(phone) {
+        return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+    }
+
+    function showDraftSavedModal() {
+        showModal('draftSavedModal');
+        setTimeout(() => closeModal('draftSavedModal'), 2000);
+    }
+});
+
+// Global functions
+function resetForm() {
+    if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+        document.getElementById('{{modelNameSingularLower}}-form').reset();
+        
+        // Clear validation states
+        document.querySelectorAll('.border-red-300, .border-green-300').forEach(el => {
+            el.classList.remove('border-red-300', 'border-green-300');
+            el.classList.add('border-gray-300', 'dark:border-gray-600');
+        });
+        
+        // Clear error messages
+        document.querySelectorAll('.field-error').forEach(error => {
+            error.remove();
+        });
+        
+        formChanged = false;
+        showAlert('info', 'Form has been reset');
+    }
+}
+
+function saveForm() {
+    document.getElementById('{{modelNameSingularLower}}-form').dispatchEvent(new Event('submit'));
+}
+
+// Modal helpers
+function showModal(modalId) {
+    document.getElementById(modalId).classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
+
+// Alert helper
+function showAlert(type, message) {
+    const alertTypes = {
+        'success': 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-700 dark:text-green-200',
+        'error': 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-700 dark:text-red-200',
+        'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-200',
+        'info': 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-900/20 dark:border-blue-700 dark:text-blue-200'
+    };
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `mb-6 border rounded-lg p-4 ${alertTypes[type]} alert-dismissible`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        <div class="flex">
+            <div class="ml-3">
+                <p>${message}</p>
+            </div>
+            <div class="ml-auto pl-3">
+                <button type="button" class="inline-flex hover:opacity-75" onclick="this.parentElement.parentElement.parentElement.remove()">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    const container = document.querySelector('.min-h-screen > .px-4');
+    container.insertBefore(alertDiv, container.children[1]);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+@endpush

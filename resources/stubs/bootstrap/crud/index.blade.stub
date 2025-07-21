@@ -1,0 +1,153 @@
+@extends('{{ $layout }}')
+
+@section('title', '{{ $title }}')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ $title }}</h5>
+                    <a href="{{ route('{{ $route_prefix }}.create') }}" class="btn btn-primary">
+                        <i class="bi bi-plus"></i> Add {{ $singular }}
+                    </a>
+                </div>
+                
+                <div class="card-body">
+                    @if($features.search || $features.filtering)
+                    <!-- Search and Filters -->
+                    <form method="GET" class="mb-4">
+                        <div class="row g-3">
+                            @if($features.search)
+                            <div class="col-md-6">
+                                <input type="text" 
+                                       class="form-control" 
+                                       name="search" 
+                                       placeholder="Search {{ $plural }}..."
+                                       value="{{ request('search') }}">
+                            </div>
+                            @endif
+                            
+                            @foreach($filters as $filter)
+                            <div class="col-md-{{ $filter.width }}">
+                                <select name="{{ $filter.name }}" class="form-select">
+                                    <option value="">All {{ $filter.label }}</option>
+                                    @foreach($filter.options as $value => $label)
+                                    <option value="{{ $value }}" {{ request('{{ $filter.name }}') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endforeach
+                            
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    @endif
+
+                    <!-- Data Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    @foreach($columns as $column)
+                                    <th>
+                                        @if($column.sortable)
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => '{{ $column.name }}', 'direction' => request('direction') == 'asc' ? 'desc' : 'asc']) }}" 
+                                           class="text-decoration-none">
+                                            {{ $column.label }}
+                                            @if(request('sort') == '{{ $column.name }}')
+                                                <i class="bi bi-chevron-{{ request('direction') == 'asc' ? 'up' : 'down' }}"></i>
+                                            @endif
+                                        </a>
+                                        @else
+                                        {{ $column.label }}
+                                        @endif
+                                    </th>
+                                    @endforeach
+                                    <th width="200">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse(${{ $collection }} as ${{ $item }})
+                                    <tr>
+                                        @foreach($columns as $column)
+                                        <td>{{ ${{ $item }}->{{ $column.attribute }} }}</td>
+                                        @endforeach
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('{{ $route_prefix }}.show', ${{ $item }}) }}" 
+                                                   class="btn btn-sm btn-outline-info">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{{ route('{{ $route_prefix }}.edit', ${{ $item }}) }}" 
+                                                   class="btn btn-sm btn-outline-warning">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="deleteItem({{ ${{ $item }}->id }})">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ count($columns) + 1 }}" class="text-center py-4">
+                                            <div class="text-muted">
+                                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                                No {{ $plural }} found
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if($features.pagination)
+                    <!-- Pagination -->
+                    {{ ${{ $collection }}->links() }}
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if($features.modal_dialogs)
+<!-- Delete Modal -->
+@include('{{ $route_prefix }}.partials.delete-modal')
+@endif
+@endsection
+
+@if($features.ajax_forms)
+@push('scripts')
+<script>
+function deleteItem(itemId) {
+    if (confirm('Are you sure you want to delete this {{ $singular }}?')) {
+        fetch(`/{{ $route_prefix }}/${itemId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error deleting {{ $singular }}');
+            }
+        });
+    }
+}
+</script>
+@endpush
+@endif

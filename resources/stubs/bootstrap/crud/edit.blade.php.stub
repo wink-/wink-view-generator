@@ -1,0 +1,1251 @@
+@extends('layouts.{{layout}}')
+
+@section('title', 'Edit {{modelNameSingular}}')
+
+@section('content')
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Edit {{modelNameSingular}}</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('{{routeName}}.index') }}">{{modelNamePlural}}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('{{routeName}}.show', ${{modelNameSingularLower}}) }}">{{ ${{modelNameSingularLower}}->{{displayField}} }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                    </ol>
+                </nav>
+            </div>
+
+            <!-- Validation Errors -->
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" aria-live="polite">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Please correct the following errors:
+                    </h6>
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <!-- Success Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            <div class="row">
+                <!-- Main Form -->
+                <div class="col-lg-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-white border-bottom">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-{{iconName}} me-2"></i>
+                                        Edit {{modelNameSingular}} Information
+                                    </h5>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="{{ route('{{routeName}}.show', ${{modelNameSingularLower}}) }}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-eye me-1"></i>
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form action="{{ route('{{routeName}}.update', ${{modelNameSingularLower}}) }}" 
+                              method="POST" 
+                              enctype="multipart/form-data"
+                              id="{{modelNameSingularLower}}-form"
+                              novalidate>
+                            @csrf
+                            @method('PUT')
+                            
+                            <div class="card-body">
+                                <div class="row g-4">
+                                    {{#formFields}}
+                                    <div class="col-md-{{colSize}}">
+                                        @include('components.form-field', [
+                                            'name' => '{{name}}',
+                                            'label' => '{{label}}',
+                                            'type' => '{{type}}',
+                                            'value' => old('{{name}}', ${{modelNameSingularLower}}->{{name}}),
+                                            'required' => {{required}},
+                                            'placeholder' => '{{placeholder}}',
+                                            'help' => '{{helpText}}',
+                                            'options' => {{options}},
+                                            'attributes' => {{attributes}},
+                                            'model' => ${{modelNameSingularLower}}
+                                        ])
+                                    </div>
+                                    {{/formFields}}
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-light">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                                <i class="bi bi-check-lg me-1"></i>
+                                                <span class="btn-text">Update {{modelNameSingular}}</span>
+                                                <span class="spinner-border spinner-border-sm ms-1 d-none" role="status" aria-hidden="true"></span>
+                                            </button>
+                                            
+                                            <button type="submit" 
+                                                    name="action" 
+                                                    value="save_and_continue"
+                                                    class="btn btn-success">
+                                                <i class="bi bi-arrow-repeat me-1"></i>
+                                                Save & Continue Editing
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 text-md-end">
+                                        <div class="d-flex gap-2 justify-content-md-end">
+                                            <button type="button" 
+                                                    class="btn btn-outline-secondary"
+                                                    onclick="resetForm()">
+                                                <i class="bi bi-arrow-clockwise me-1"></i>
+                                                Reset Changes
+                                            </button>
+                                            
+                                            <a href="{{ route('{{routeName}}.show', ${{modelNameSingularLower}}) }}" 
+                                               class="btn btn-outline-danger">
+                                                <i class="bi bi-x-lg me-1"></i>
+                                                Cancel
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <!-- Current Information -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Current Information
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">ID</div>
+                                        <div class="fw-bold">{{ ${{modelNameSingularLower}}->{{primaryKey}} }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Status</div>
+                                        <div>
+                                            @if(isset(${{modelNameSingularLower}}->status))
+                                                <span class="badge bg-{{ ${{modelNameSingularLower}}->status == 'active' ? 'success' : 'secondary' }}">
+                                                    {{ ucfirst(${{modelNameSingularLower}}->status) }}
+                                                </span>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Created</div>
+                                        <div class="small">{{ ${{modelNameSingularLower}}->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="text-center">
+                                        <div class="text-muted small">Last Updated</div>
+                                        <div class="small">{{ ${{modelNameSingularLower}}->updated_at->diffForHumans() }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Change History -->
+                    @if(method_exists(${{modelNameSingularLower}}, 'audits') && ${{modelNameSingularLower}}->audits->count() > 0)
+                        <div class="card shadow mb-4">
+                            <div class="card-header bg-white border-bottom">
+                                <h6 class="card-title mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Recent Changes
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="timeline">
+                                    @foreach(${{modelNameSingularLower}}->audits->take(5) as $audit)
+                                        <div class="timeline-item p-3 border-bottom">
+                                            <div class="d-flex">
+                                                <div class="timeline-marker me-3">
+                                                    <i class="bi bi-{{ $audit->event == 'created' ? 'plus' : ($audit->event == 'updated' ? 'pencil' : 'trash') }} text-{{ $audit->event == 'created' ? 'success' : ($audit->event == 'updated' ? 'warning' : 'danger') }}"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-bold small">
+                                                        {{ ucfirst($audit->event) }}
+                                                        @if($audit->event == 'updated' && count($audit->getModified()) > 0)
+                                                            ({{ implode(', ', array_keys($audit->getModified())) }})
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-muted small">
+                                                        {{ $audit->created_at->diffForHumans() }}
+                                                    </div>
+                                                    @if($audit->user)
+                                                        <div class="text-muted small">
+                                                            by {{ $audit->user->name }}
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                                <div class="p-3">
+                                    <a href="{{ route('{{routeName}}.audit', ${{modelNameSingularLower}}) }}" 
+                                       class="btn btn-outline-primary btn-sm w-100">
+                                        View Full History
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Help Card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-question-circle me-2"></i>
+                                Help & Tips
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Required Fields</h6>
+                                <p class="small text-muted mb-0">
+                                    Fields marked with <span class="text-danger">*</span> are required and must be filled out before you can save.
+                                </p>
+                            </div>
+                            
+                            {{#helpSections}}
+                            <div class="mb-3">
+                                <h6 class="fw-bold">{{title}}</h6>
+                                <p class="small text-muted mb-0">{{description}}</p>
+                            </div>
+                            {{/helpSections}}
+                            
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-lightbulb me-1"></i>
+                                Changes are automatically saved as drafts while you edit.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-lightning me-2"></i>
+                                Quick Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                @can('view', ${{modelNameSingularLower}})
+                                    <a href="{{ route('{{routeName}}.show', ${{modelNameSingularLower}}) }}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="bi bi-eye me-1"></i>
+                                        View Details
+                                    </a>
+                                @endcan
+                                
+                                @can('create', {{modelClass}}::class)
+                                    <a href="{{ route('{{routeName}}.create') }}" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create New {{modelNameSingular}}
+                                    </a>
+                                @endcan
+                                
+                                <button type="button" 
+                                        class="btn btn-outline-secondary btn-sm"
+                                        onclick="duplicateRecord()">
+                                    <i class="bi bi-files me-1"></i>
+                                    Duplicate Record
+                                </button>
+                                
+                                <button type="button" 
+                                        class="btn btn-outline-primary btn-sm"
+                                        onclick="exportRecord()">
+                                    <i class="bi bi-download me-1"></i>
+                                    Export Data
+                                </button>
+                                
+                                @can('delete', ${{modelNameSingularLower}})
+                                    <button type="button" 
+                                            class="btn btn-outline-danger btn-sm"
+                                            onclick="confirmDelete()">
+                                        <i class="bi bi-trash me-1"></i>
+                                        Delete {{modelNameSingular}}
+                                    </button>
+                                @endcan
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auto-save Status -->
+                    <div class="card shadow">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="card-title mb-0">
+                                <i class="bi bi-cloud me-2"></i>
+                                Auto-save
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="auto-save-toggle"
+                                       checked>
+                                <label class="form-check-label small" for="auto-save-toggle">
+                                    Enable auto-save
+                                </label>
+                            </div>
+                            <div id="auto-save-status" class="small text-muted mt-2">
+                                Auto-save is enabled
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Changes Comparison Modal -->
+<div class="modal fade" id="changesModal" tabindex="-1" aria-labelledby="changesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changesModalLabel">
+                    <i class="bi bi-eye me-2"></i>
+                    Review Changes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="changes-content">
+                    <!-- Changes will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unsaved Changes Modal -->
+<div class="modal fade" id="unsavedChangesModal" tabindex="-1" aria-labelledby="unsavedChangesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="unsavedChangesModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Unsaved Changes
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You have unsaved changes. Are you sure you want to leave without saving?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Stay</button>
+                <button type="button" class="btn btn-primary" onclick="saveForm()">Save & Continue</button>
+                <button type="button" class="btn btn-danger" id="leave-anyway">Leave Anyway</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this {{modelNameSingular}}?</p>
+                <p class="text-muted mb-0">This action cannot be undone and may affect related data.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="performDelete()">
+                    <i class="bi bi-trash me-1"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Draft Saved Modal -->
+<div class="modal fade" id="draftSavedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <i class="bi bi-check-circle text-success display-4"></i>
+                <p class="mt-2 mb-0">Changes saved!</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('styles')
+<style>
+.is-invalid {
+    border-color: #dc3545;
+}
+
+.is-valid {
+    border-color: #198754;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+
+.valid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #198754;
+}
+
+.timeline {
+    position: relative;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.changes-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.changes-comparison .old-value,
+.changes-comparison .new-value {
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+.changes-comparison .old-value {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.changes-comparison .new-value {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+.field-changed {
+    animation: highlight 2s ease-in-out;
+}
+
+@keyframes highlight {
+    0% { background-color: #fff3cd; }
+    100% { background-color: transparent; }
+}
+
+.character-count {
+    font-size: 0.75rem;
+    color: #6c757d;
+    text-align: right;
+}
+
+.character-count.warning {
+    color: #fd7e14;
+}
+
+.character-count.danger {
+    color: #dc3545;
+}
+
+.preview-image {
+    max-width: 200px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .card-footer .row > div {
+        margin-bottom: 1rem;
+    }
+    
+    .card-footer .d-flex {
+        flex-direction: column;
+    }
+    
+    .card-footer .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .changes-comparison {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('{{modelNameSingularLower}}-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const autoSaveToggle = document.getElementById('auto-save-toggle');
+    const autoSaveStatus = document.getElementById('auto-save-status');
+    
+    let formChanged = false;
+    let autoSaveInterval;
+    let originalFormData = {};
+    let lastSavedData = {};
+
+    // Initialize form
+    initializeForm();
+    setupValidation();
+    setupAutoSave();
+    setupUnsavedChangesWarning();
+    setupChangeDetection();
+
+    function initializeForm() {
+        // Store original form data for comparison
+        storeOriginalFormData();
+        
+        // Setup file upload previews
+        setupFileUploads();
+        
+        // Setup character counters
+        setupCharacterCounters();
+        
+        // Setup dependent fields
+        setupDependentFields();
+    }
+
+    function storeOriginalFormData() {
+        const formData = new FormData(form);
+        for (let [key, value] of formData.entries()) {
+            originalFormData[key] = value;
+        }
+    }
+
+    function setupChangeDetection() {
+        form.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('input', function() {
+                formChanged = true;
+                highlightChangedField(this);
+                updateChangesSummary();
+            });
+            
+            field.addEventListener('change', function() {
+                formChanged = true;
+                highlightChangedField(this);
+                updateChangesSummary();
+            });
+        });
+    }
+
+    function highlightChangedField(field) {
+        const originalValue = originalFormData[field.name] || '';
+        const currentValue = field.value || '';
+        
+        if (originalValue !== currentValue) {
+            field.classList.add('field-changed');
+            setTimeout(() => field.classList.remove('field-changed'), 2000);
+        }
+    }
+
+    function updateChangesSummary() {
+        const changes = getFormChanges();
+        const changedFields = Object.keys(changes);
+        
+        if (changedFields.length > 0) {
+            // Show changes indicator in UI
+            showChangesIndicator(changedFields.length);
+        } else {
+            hideChangesIndicator();
+        }
+    }
+
+    function getFormChanges() {
+        const currentData = {};
+        const formData = new FormData(form);
+        
+        for (let [key, value] of formData.entries()) {
+            currentData[key] = value;
+        }
+        
+        const changes = {};
+        for (let key in currentData) {
+            if (originalFormData[key] !== currentData[key]) {
+                changes[key] = {
+                    old: originalFormData[key] || '',
+                    new: currentData[key] || ''
+                };
+            }
+        }
+        
+        return changes;
+    }
+
+    function showChangesIndicator(count) {
+        // Add visual indicator for changed fields
+        let indicator = document.getElementById('changes-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'changes-indicator';
+            indicator.className = 'alert alert-warning small position-fixed';
+            indicator.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 200px;';
+            document.body.appendChild(indicator);
+        }
+        
+        indicator.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            ${count} field${count > 1 ? 's' : ''} changed
+            <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="showChangesModal()">
+                Review
+            </button>
+        `;
+    }
+
+    function hideChangesIndicator() {
+        const indicator = document.getElementById('changes-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    function setupValidation() {
+        // Real-time validation (same as create form)
+        form.querySelectorAll('input, select, textarea').forEach(field => {
+            field.addEventListener('blur', function() {
+                validateField(this);
+            });
+            
+            field.addEventListener('input', function() {
+                clearFieldError(this);
+                
+                clearTimeout(this.validationTimeout);
+                this.validationTimeout = setTimeout(() => {
+                    validateField(this);
+                }, 500);
+            });
+        });
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                showChangesModal();
+            }
+        });
+    }
+
+    function validateField(field) {
+        const fieldName = field.name;
+        const value = field.value.trim();
+        const isRequired = field.hasAttribute('required');
+        
+        field.classList.remove('is-valid', 'is-invalid');
+        
+        if (isRequired && !value) {
+            showFieldError(field, 'This field is required');
+            return false;
+        }
+        
+        // Type-specific validation (same as create form)
+        switch (field.type) {
+            case 'email':
+                if (value && !isValidEmail(value)) {
+                    showFieldError(field, 'Please enter a valid email address');
+                    return false;
+                }
+                break;
+                
+            case 'url':
+                if (value && !isValidUrl(value)) {
+                    showFieldError(field, 'Please enter a valid URL');
+                    return false;
+                }
+                break;
+                
+            case 'tel':
+                if (value && !isValidPhone(value)) {
+                    showFieldError(field, 'Please enter a valid phone number');
+                    return false;
+                }
+                break;
+                
+            case 'number':
+                const min = field.getAttribute('min');
+                const max = field.getAttribute('max');
+                const numValue = parseFloat(value);
+                
+                if (value && isNaN(numValue)) {
+                    showFieldError(field, 'Please enter a valid number');
+                    return false;
+                }
+                
+                if (min && numValue < parseFloat(min)) {
+                    showFieldError(field, `Value must be at least ${min}`);
+                    return false;
+                }
+                
+                if (max && numValue > parseFloat(max)) {
+                    showFieldError(field, `Value must be no more than ${max}`);
+                    return false;
+                }
+                break;
+        }
+        
+        const pattern = field.getAttribute('pattern');
+        if (pattern && value && !new RegExp(pattern).test(value)) {
+            const title = field.getAttribute('title') || 'Invalid format';
+            showFieldError(field, title);
+            return false;
+        }
+        
+        const customValidation = window[`validate${capitalize(fieldName)}`];
+        if (typeof customValidation === 'function') {
+            const result = customValidation(value, field);
+            if (result !== true) {
+                showFieldError(field, result);
+                return false;
+            }
+        }
+        
+        showFieldSuccess(field);
+        return true;
+    }
+
+    function validateForm() {
+        let isValid = true;
+        const fields = form.querySelectorAll('input, select, textarea');
+        
+        fields.forEach(field => {
+            if (!validateField(field)) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            const firstInvalid = form.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.focus();
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        return isValid;
+    }
+
+    function submitForm() {
+        const spinner = submitBtn.querySelector('.spinner-border');
+        const btnText = submitBtn.querySelector('.btn-text');
+        
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = 'Updating...';
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                formChanged = false;
+                hideChangesIndicator();
+                
+                showAlert('success', data.message || '{{modelNameSingular}} updated successfully');
+                
+                // Update original form data
+                storeOriginalFormData();
+                
+                const action = form.querySelector('[name="action"]:checked')?.value || 
+                              (event.submitter && event.submitter.value) || 'default';
+                
+                if (action !== 'save_and_continue') {
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '{{ route('{{routeName}}.show', ${{modelNameSingularLower}}) }}';
+                    }, 1500);
+                }
+            } else {
+                throw new Error(data.message || 'An error occurred');
+            }
+        })
+        .catch(error => {
+            showAlert('danger', error.message || 'An error occurred while updating the {{modelNameSingular}}');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = 'Update {{modelNameSingular}}';
+        });
+    }
+
+    function setupAutoSave() {
+        if (autoSaveToggle.checked) {
+            startAutoSave();
+        }
+        
+        autoSaveToggle.addEventListener('change', function() {
+            if (this.checked) {
+                startAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is enabled';
+                autoSaveStatus.className = 'small text-success mt-2';
+            } else {
+                stopAutoSave();
+                autoSaveStatus.textContent = 'Auto-save is disabled';
+                autoSaveStatus.className = 'small text-muted mt-2';
+            }
+        });
+    }
+
+    function startAutoSave() {
+        autoSaveInterval = setInterval(() => {
+            if (formChanged) {
+                saveDraft();
+            }
+        }, 30000);
+    }
+
+    function stopAutoSave() {
+        if (autoSaveInterval) {
+            clearInterval(autoSaveInterval);
+        }
+    }
+
+    function saveDraft() {
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        if (JSON.stringify(data) !== JSON.stringify(lastSavedData)) {
+            fetch('{{ route('{{routeName}}.save-draft', ${{modelNameSingularLower}}) }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    lastSavedData = data;
+                    formChanged = false;
+                    
+                    autoSaveStatus.textContent = 'Draft saved ' + new Date().toLocaleTimeString();
+                    autoSaveStatus.className = 'small text-success mt-2';
+                    
+                    showDraftSavedModal();
+                }
+            })
+            .catch(error => {
+                console.error('Auto-save failed:', error);
+                autoSaveStatus.textContent = 'Auto-save failed';
+                autoSaveStatus.className = 'small text-danger mt-2';
+            });
+        }
+    }
+
+    function setupUnsavedChangesWarning() {
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        document.querySelectorAll('a[href]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (formChanged && !this.href.includes('#')) {
+                    e.preventDefault();
+                    const unsavedModal = new bootstrap.Modal(document.getElementById('unsavedChangesModal'));
+                    unsavedModal.show();
+                    
+                    document.getElementById('leave-anyway').onclick = () => {
+                        formChanged = false;
+                        window.location.href = this.href;
+                    };
+                }
+            });
+        });
+    }
+
+    function setupFileUploads() {
+        form.querySelectorAll('input[type="file"]').forEach(fileInput => {
+            setupFileUpload(fileInput);
+        });
+    }
+
+    function setupFileUpload(fileInput) {
+        const previewContainer = fileInput.parentNode.querySelector('.file-preview');
+        
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && previewContainer) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = `
+                            <img src="${e.target.result}" class="preview-image" alt="Preview">
+                            <button type="button" class="btn btn-sm btn-outline-danger mt-2" onclick="clearFilePreview(this)">
+                                <i class="bi bi-x-lg"></i> Remove
+                            </button>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewContainer.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <span>${file.name}</span>
+                            <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="clearFilePreview(this)">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        });
+    }
+
+    function setupCharacterCounters() {
+        form.querySelectorAll('textarea[maxlength], input[maxlength]').forEach(field => {
+            const maxLength = parseInt(field.getAttribute('maxlength'));
+            if (maxLength) {
+                const counter = document.createElement('div');
+                counter.className = 'character-count';
+                field.parentNode.appendChild(counter);
+                
+                function updateCounter() {
+                    const remaining = maxLength - field.value.length;
+                    counter.textContent = `${field.value.length}/${maxLength} characters`;
+                    
+                    counter.className = 'character-count';
+                    if (remaining < maxLength * 0.1) {
+                        counter.classList.add('danger');
+                    } else if (remaining < maxLength * 0.2) {
+                        counter.classList.add('warning');
+                    }
+                }
+                
+                field.addEventListener('input', updateCounter);
+                updateCounter();
+            }
+        });
+    }
+
+    function setupDependentFields() {
+        {{#dependentFields}}
+        const {{parentField}} = form.querySelector('[name="{{parentField}}"]');
+        const {{childField}} = form.querySelector('[name="{{childField}}"]');
+        
+        if ({{parentField}} && {{childField}}) {
+            {{parentField}}.addEventListener('change', function() {
+                updateDependentField('{{parentField}}', '{{childField}}', this.value);
+            });
+        }
+        {{/dependentFields}}
+    }
+
+    function updateDependentField(parentField, childField, parentValue) {
+        const childSelect = form.querySelector(`[name="${childField}"]`);
+        if (!childSelect) return;
+        
+        childSelect.disabled = true;
+        childSelect.innerHTML = '<option>Loading...</option>';
+        
+        fetch(`/api/dependent-options/${parentField}/${childField}/${parentValue}`)
+            .then(response => response.json())
+            .then(data => {
+                childSelect.innerHTML = '<option value="">Choose...</option>';
+                data.forEach(option => {
+                    childSelect.innerHTML += `<option value="${option.value}">${option.label}</option>`;
+                });
+                childSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading dependent options:', error);
+                childSelect.innerHTML = '<option value="">Error loading options</option>';
+                childSelect.disabled = false;
+            });
+    }
+
+    // Helper functions
+    function showFieldError(field, message) {
+        field.classList.remove('is-valid');
+        field.classList.add('is-invalid');
+        
+        let feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            field.parentNode.appendChild(feedback);
+        }
+        feedback.textContent = message;
+    }
+
+    function showFieldSuccess(field) {
+        field.classList.remove('is-invalid');
+        field.classList.add('is-valid');
+        
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+    }
+
+    function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function isValidUrl(url) {
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    function isValidPhone(phone) {
+        return /^[\+]?[1-9][\d]{0,15}$/.test(phone.replace(/[\s\-\(\)]/g, ''));
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function showDraftSavedModal() {
+        const modal = new bootstrap.Modal(document.getElementById('draftSavedModal'));
+        modal.show();
+        setTimeout(() => modal.hide(), 2000);
+    }
+});
+
+// Global functions
+function showChangesModal() {
+    const changes = getFormChanges();
+    const changesContent = document.getElementById('changes-content');
+    
+    if (Object.keys(changes).length === 0) {
+        changesContent.innerHTML = '<p class="text-muted">No changes detected.</p>';
+    } else {
+        let html = '';
+        for (let [field, change] of Object.entries(changes)) {
+            const fieldLabel = document.querySelector(`[name="${field}"]`)?.getAttribute('data-label') || field;
+            html += `
+                <div class="mb-3">
+                    <h6 class="fw-bold">${fieldLabel}</h6>
+                    <div class="changes-comparison">
+                        <div class="old-value">
+                            <small class="text-muted">Current</small>
+                            <div>${change.old || '<em>Empty</em>'}</div>
+                        </div>
+                        <div class="new-value">
+                            <small class="text-muted">New</small>
+                            <div>${change.new || '<em>Empty</em>'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        changesContent.innerHTML = html;
+    }
+    
+    const changesModal = new bootstrap.Modal(document.getElementById('changesModal'));
+    changesModal.show();
+}
+
+function saveChanges() {
+    bootstrap.Modal.getInstance(document.getElementById('changesModal')).hide();
+    submitForm();
+}
+
+function resetForm() {
+    if (confirm('Are you sure you want to reset all changes? This will revert to the last saved state.')) {
+        location.reload();
+    }
+}
+
+function saveForm() {
+    document.getElementById('{{modelNameSingularLower}}-form').dispatchEvent(new Event('submit'));
+}
+
+function duplicateRecord() {
+    if (confirm('Create a duplicate of this {{modelNameSingular}}?')) {
+        window.location.href = '{{ route('{{routeName}}.duplicate', ${{modelNameSingularLower}}) }}';
+    }
+}
+
+function exportRecord() {
+    window.location.href = '{{ route('{{routeName}}.export', ${{modelNameSingularLower}}) }}';
+}
+
+function confirmDelete() {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+
+function performDelete() {
+    fetch('{{ route('{{routeName}}.destroy', ${{modelNameSingularLower}}) }}', {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        
+        if (data.success) {
+            showAlert('success', data.message || '{{modelNameSingular}} deleted successfully');
+            setTimeout(() => {
+                window.location.href = '{{ route('{{routeName}}.index') }}';
+            }, 1500);
+        } else {
+            showAlert('danger', data.message || 'Error deleting {{modelNameSingular}}');
+        }
+    })
+    .catch(error => {
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+        showAlert('danger', 'An error occurred while deleting the {{modelNameSingular}}');
+        console.error('Error:', error);
+    });
+}
+
+function clearFilePreview(button) {
+    const preview = button.closest('.file-preview');
+    const fileInput = preview.parentNode.querySelector('input[type="file"]');
+    
+    preview.innerHTML = '';
+    fileInput.value = '';
+    formChanged = true;
+}
+
+function getFormChanges() {
+    const form = document.getElementById('{{modelNameSingularLower}}-form');
+    const currentData = {};
+    const formData = new FormData(form);
+    
+    for (let [key, value] of formData.entries()) {
+        currentData[key] = value;
+    }
+    
+    const changes = {};
+    for (let key in currentData) {
+        if (originalFormData[key] !== currentData[key]) {
+            changes[key] = {
+                old: originalFormData[key] || '',
+                new: currentData[key] || ''
+            };
+        }
+    }
+    
+    return changes;
+}
+
+// Alert helper
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.setAttribute('role', 'alert');
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            bootstrap.Alert.getInstance(alertDiv)?.close();
+        }
+    }, 5000);
+}
+</script>
+@endpush

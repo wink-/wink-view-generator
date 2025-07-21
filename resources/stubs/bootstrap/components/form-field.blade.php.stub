@@ -1,0 +1,618 @@
+@props([
+    'name',
+    'label',
+    'type' => 'text',
+    'value' => '',
+    'required' => false,
+    'placeholder' => '',
+    'help' => '',
+    'options' => [],
+    'attributes' => [],
+    'model' => null,
+    'readonly' => false,
+    'disabled' => false,
+    'multiple' => false,
+    'accept' => '',
+    'min' => '',
+    'max' => '',
+    'step' => '',
+    'rows' => 4,
+    'cols' => '',
+    'maxlength' => '',
+    'pattern' => '',
+    'autocomplete' => '',
+    'class' => ''
+])
+
+@php
+    $fieldId = $attributes['id'] ?? $name;
+    $fieldClass = 'form-control';
+    $containerClass = 'mb-3';
+    $hasError = $errors->has($name);
+    $fieldValue = old($name, $value);
+    
+    // Handle different field types
+    if ($type === 'checkbox' || $type === 'radio') {
+        $fieldClass = 'form-check-input';
+        $containerClass = 'form-check mb-3';
+    } elseif ($type === 'select') {
+        $fieldClass = 'form-select';
+    } elseif ($type === 'file') {
+        $fieldClass = 'form-control';
+    } elseif ($type === 'range') {
+        $fieldClass = 'form-range';
+    }
+    
+    // Add custom classes
+    if ($class) {
+        $fieldClass .= ' ' . $class;
+    }
+    
+    // Add validation classes
+    if ($hasError) {
+        $fieldClass .= ' is-invalid';
+    } elseif (old($name) !== null && !$hasError) {
+        $fieldClass .= ' is-valid';
+    }
+    
+    // Merge additional attributes
+    $fieldAttributes = array_merge([
+        'class' => $fieldClass,
+        'id' => $fieldId,
+        'name' => $name,
+        'data-label' => $label,
+    ], $attributes);
+    
+    if ($required) {
+        $fieldAttributes['required'] = true;
+        $fieldAttributes['aria-required'] = 'true';
+    }
+    
+    if ($readonly) {
+        $fieldAttributes['readonly'] = true;
+    }
+    
+    if ($disabled) {
+        $fieldAttributes['disabled'] = true;
+    }
+    
+    if ($placeholder) {
+        $fieldAttributes['placeholder'] = $placeholder;
+    }
+    
+    if ($maxlength) {
+        $fieldAttributes['maxlength'] = $maxlength;
+    }
+    
+    if ($pattern) {
+        $fieldAttributes['pattern'] = $pattern;
+    }
+    
+    if ($autocomplete) {
+        $fieldAttributes['autocomplete'] = $autocomplete;
+    }
+    
+    if ($help) {
+        $fieldAttributes['aria-describedby'] = $fieldId . '-help';
+    }
+    
+    // Type-specific attributes
+    if (in_array($type, ['number', 'range'])) {
+        if ($min !== '') $fieldAttributes['min'] = $min;
+        if ($max !== '') $fieldAttributes['max'] = $max;
+        if ($step !== '') $fieldAttributes['step'] = $step;
+    }
+    
+    if ($type === 'file') {
+        if ($accept) $fieldAttributes['accept'] = $accept;
+        if ($multiple) $fieldAttributes['multiple'] = true;
+    }
+    
+    if ($type === 'textarea') {
+        if ($rows) $fieldAttributes['rows'] = $rows;
+        if ($cols) $fieldAttributes['cols'] = $cols;
+    }
+@endphp
+
+<div class="{{ $containerClass }}">
+    @if($type === 'checkbox')
+        <input type="hidden" name="{{ $name }}" value="0">
+        <input 
+            type="checkbox" 
+            value="1"
+            {{ $fieldValue ? 'checked' : '' }}
+            {!! html_attributes($fieldAttributes) !!}>
+        <label class="form-check-label" for="{{ $fieldId }}">
+            {{ $label }}
+            @if($required)
+                <span class="text-danger" aria-label="required">*</span>
+            @endif
+        </label>
+    @elseif($type === 'radio' && !empty($options))
+        <fieldset>
+            <legend class="form-label">
+                {{ $label }}
+                @if($required)
+                    <span class="text-danger" aria-label="required">*</span>
+                @endif
+            </legend>
+            @foreach($options as $optionValue => $optionLabel)
+                <div class="form-check">
+                    <input 
+                        type="radio" 
+                        class="form-check-input {{ $hasError ? 'is-invalid' : '' }}"
+                        id="{{ $fieldId }}_{{ $loop->index }}"
+                        name="{{ $name }}" 
+                        value="{{ $optionValue }}"
+                        {{ $fieldValue == $optionValue ? 'checked' : '' }}
+                        {{ $required ? 'required' : '' }}
+                        {{ $disabled ? 'disabled' : '' }}>
+                    <label class="form-check-label" for="{{ $fieldId }}_{{ $loop->index }}">
+                        {{ $optionLabel }}
+                    </label>
+                </div>
+            @endforeach
+        </fieldset>
+    @else
+        <label for="{{ $fieldId }}" class="form-label">
+            {{ $label }}
+            @if($required)
+                <span class="text-danger" aria-label="required">*</span>
+            @endif
+        </label>
+        
+        @if($type === 'select')
+            <select {!! html_attributes($fieldAttributes) !!}>
+                @if(!$required || !$fieldValue)
+                    <option value="">{{ $placeholder ?: 'Choose ' . strtolower($label) . '...' }}</option>
+                @endif
+                
+                @foreach($options as $optionValue => $optionLabel)
+                    @if(is_array($optionLabel))
+                        <!-- Optgroup -->
+                        <optgroup label="{{ $optionValue }}">
+                            @foreach($optionLabel as $groupValue => $groupLabel)
+                                <option 
+                                    value="{{ $groupValue }}" 
+                                    {{ $fieldValue == $groupValue ? 'selected' : '' }}>
+                                    {{ $groupLabel }}
+                                </option>
+                            @endforeach
+                        </optgroup>
+                    @else
+                        <option 
+                            value="{{ $optionValue }}" 
+                            {{ $fieldValue == $optionValue ? 'selected' : '' }}>
+                            {{ $optionLabel }}
+                        </option>
+                    @endif
+                @endforeach
+            </select>
+            
+        @elseif($type === 'textarea')
+            <textarea {!! html_attributes($fieldAttributes) !!}>{{ $fieldValue }}</textarea>
+            
+        @elseif($type === 'file')
+            <input 
+                type="file"
+                {!! html_attributes($fieldAttributes) !!}>
+                
+            <!-- File Preview Container -->
+            <div class="file-preview mt-2">
+                @if($model && $model->{$name})
+                    @if(Str::startsWith(Storage::mimeType($model->{$name}), 'image/'))
+                        <div class="current-file">
+                            <img src="{{ Storage::url($model->{$name}) }}" 
+                                 alt="Current {{ $label }}" 
+                                 class="img-thumbnail"
+                                 style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                            <div class="mt-1">
+                                <small class="text-muted">Current file</small>
+                            </div>
+                        </div>
+                    @else
+                        <div class="current-file">
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <i class="bi bi-file-earmark me-2"></i>
+                                <span>{{ basename($model->{$name}) }}</span>
+                                <a href="{{ Storage::url($model->{$name}) }}" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-primary ms-auto">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">Current file</small>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+            </div>
+            
+        @elseif($type === 'color')
+            <div class="input-group">
+                <input 
+                    type="color"
+                    {!! html_attributes(array_merge($fieldAttributes, ['class' => 'form-control form-control-color'])) !!}
+                    value="{{ $fieldValue }}">
+                <input 
+                    type="text"
+                    class="form-control"
+                    value="{{ $fieldValue }}"
+                    placeholder="#000000"
+                    pattern="^#[0-9A-Fa-f]{6}$"
+                    onchange="document.getElementById('{{ $fieldId }}').value = this.value">
+            </div>
+            
+        @elseif($type === 'range')
+            <input 
+                type="range"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue }}"
+                oninput="document.getElementById('{{ $fieldId }}_output').value = this.value">
+            <div class="d-flex justify-content-between">
+                <small class="text-muted">{{ $min }}</small>
+                <output id="{{ $fieldId }}_output" class="badge bg-secondary">{{ $fieldValue }}</output>
+                <small class="text-muted">{{ $max }}</small>
+            </div>
+            
+        @elseif($type === 'datetime-local')
+            <input 
+                type="datetime-local"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('Y-m-d\TH:i') : '' }}">
+                
+        @elseif($type === 'date')
+            <input 
+                type="date"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('Y-m-d') : '' }}">
+                
+        @elseif($type === 'time')
+            <input 
+                type="time"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue ? \Carbon\Carbon::parse($fieldValue)->format('H:i') : '' }}">
+                
+        @elseif($type === 'password')
+            <div class="input-group">
+                <input 
+                    type="password"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}">
+                <button class="btn btn-outline-secondary" 
+                        type="button" 
+                        onclick="togglePassword('{{ $fieldId }}')"
+                        aria-label="Toggle password visibility">
+                    <i class="bi bi-eye" id="{{ $fieldId }}_icon"></i>
+                </button>
+            </div>
+            
+        @elseif($type === 'email')
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                </span>
+                <input 
+                    type="email"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'tel')
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-telephone" aria-hidden="true"></i>
+                </span>
+                <input 
+                    type="tel"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'url')
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-link-45deg" aria-hidden="true"></i>
+                </span>
+                <input 
+                    type="url"
+                    {!! html_attributes($fieldAttributes) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'currency')
+            <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    {!! html_attributes(array_merge($fieldAttributes, ['type' => 'number'])) !!}
+                    value="{{ $fieldValue }}">
+            </div>
+            
+        @elseif($type === 'tags')
+            <input 
+                type="text"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ is_array($fieldValue) ? implode(',', $fieldValue) : $fieldValue }}"
+                data-role="tagsinput">
+                
+        @else
+            <input 
+                type="{{ $type }}"
+                {!! html_attributes($fieldAttributes) !!}
+                value="{{ $fieldValue }}">
+        @endif
+    @endif
+    
+    <!-- Help Text -->
+    @if($help)
+        <div id="{{ $fieldId }}-help" class="form-text">
+            <i class="bi bi-info-circle me-1" aria-hidden="true"></i>
+            {{ $help }}
+        </div>
+    @endif
+    
+    <!-- Character Counter -->
+    @if($maxlength && in_array($type, ['text', 'textarea', 'email', 'url']))
+        <div class="form-text text-end">
+            <span id="{{ $fieldId }}_counter">{{ strlen($fieldValue) }}</span>/{{ $maxlength }} characters
+        </div>
+    @endif
+    
+    <!-- Validation Feedback -->
+    @if($hasError)
+        <div class="invalid-feedback">
+            {{ $errors->first($name) }}
+        </div>
+    @endif
+    
+    @if(old($name) !== null && !$hasError)
+        <div class="valid-feedback">
+            Looks good!
+        </div>
+    @endif
+</div>
+
+@once
+@push('styles')
+<style>
+.form-control-color {
+    max-width: 3rem;
+    height: calc(2.25rem + 2px);
+    padding: 0.375rem;
+}
+
+.input-group .form-control-color {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.file-preview img {
+    transition: transform 0.2s ease;
+}
+
+.file-preview img:hover {
+    transform: scale(1.05);
+}
+
+.current-file {
+    position: relative;
+}
+
+.current-file .btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.current-file:hover .btn {
+    opacity: 1;
+}
+
+.form-range {
+    margin-bottom: 1rem;
+}
+
+.bootstrap-tagsinput {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    display: inline-block;
+    padding: 4px 6px;
+    color: #555;
+    vertical-align: middle;
+    border-radius: 4px;
+    max-width: 100%;
+    line-height: 22px;
+    cursor: text;
+}
+
+.bootstrap-tagsinput input {
+    border: none;
+    box-shadow: none;
+    outline: none;
+    background-color: transparent;
+    padding: 0 6px;
+    margin: 0;
+    width: auto;
+    max-width: inherit;
+}
+
+.bootstrap-tagsinput.focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.bootstrap-tagsinput .tag {
+    margin-right: 2px;
+    color: white;
+    background-color: #007bff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.bootstrap-tagsinput .tag [data-role="remove"] {
+    margin-left: 8px;
+    cursor: pointer;
+}
+
+.bootstrap-tagsinput .tag [data-role="remove"]:after {
+    content: "×";
+    padding: 0px 2px;
+}
+
+@media (max-width: 768px) {
+    .input-group .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    @if($maxlength && in_array($type, ['text', 'textarea', 'email', 'url']))
+    const field_{{ Str::slug($fieldId, '_') }} = document.getElementById('{{ $fieldId }}');
+    const counter_{{ Str::slug($fieldId, '_') }} = document.getElementById('{{ $fieldId }}_counter');
+    
+    if (field_{{ Str::slug($fieldId, '_') }} && counter_{{ Str::slug($fieldId, '_') }}) {
+        field_{{ Str::slug($fieldId, '_') }}.addEventListener('input', function() {
+            const remaining = {{ $maxlength }} - this.value.length;
+            counter_{{ Str::slug($fieldId, '_') }}.textContent = this.value.length;
+            
+            const parent = counter_{{ Str::slug($fieldId, '_') }}.closest('.form-text');
+            parent.classList.remove('text-warning', 'text-danger');
+            
+            if (remaining < {{ $maxlength }} * 0.1) {
+                parent.classList.add('text-danger');
+            } else if (remaining < {{ $maxlength }} * 0.2) {
+                parent.classList.add('text-warning');
+            }
+        });
+    }
+    @endif
+    
+    // File upload preview
+    @if($type === 'file')
+    const fileInput_{{ Str::slug($fieldId, '_') }} = document.getElementById('{{ $fieldId }}');
+    const previewContainer_{{ Str::slug($fieldId, '_') }} = fileInput_{{ Str::slug($fieldId, '_') }}.parentNode.querySelector('.file-preview');
+    
+    if (fileInput_{{ Str::slug($fieldId, '_') }} && previewContainer_{{ Str::slug($fieldId, '_') }}) {
+        fileInput_{{ Str::slug($fieldId, '_') }}.addEventListener('change', function() {
+            const file = this.files[0];
+            
+            // Clear current preview
+            const existingPreview = previewContainer_{{ Str::slug($fieldId, '_') }}.querySelector('.new-file-preview');
+            if (existingPreview) {
+                existingPreview.remove();
+            }
+            
+            if (file) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'new-file-preview mt-2';
+                
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewDiv.innerHTML = `
+                            <img src="${e.target.result}" 
+                                 alt="Preview" 
+                                 class="img-thumbnail"
+                                 style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                            <div class="mt-1">
+                                <small class="text-success">New file selected</small>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger ms-2" 
+                                        onclick="clearFileInput('{{ $fieldId }}')">
+                                    <i class="bi bi-x-lg"></i> Remove
+                                </button>
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewDiv.innerHTML = `
+                        <div class="d-flex align-items-center p-2 border border-success rounded">
+                            <i class="bi bi-file-earmark me-2"></i>
+                            <span>${file.name}</span>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-danger ms-auto" 
+                                    onclick="clearFileInput('{{ $fieldId }}')">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-success">New file selected</small>
+                        </div>
+                    `;
+                }
+                
+                previewContainer_{{ Str::slug($fieldId, '_') }}.appendChild(previewDiv);
+            }
+        });
+    }
+    @endif
+    
+    // Tags input
+    @if($type === 'tags')
+    if (typeof $.fn.tagsinput !== 'undefined') {
+        $('#{{ $fieldId }}').tagsinput({
+            trimValue: true,
+            confirmKeys: [13, 44, 32], // Enter, comma, space
+            focusClass: 'focus'
+        });
+    }
+    @endif
+});
+
+// Global functions
+function togglePassword(fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + '_icon');
+    
+    if (field.type === 'password') {
+        field.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+    } else {
+        field.type = 'password';
+        icon.className = 'bi bi-eye';
+    }
+}
+
+function clearFileInput(fieldId) {
+    const input = document.getElementById(fieldId);
+    const preview = input.parentNode.querySelector('.file-preview .new-file-preview');
+    
+    input.value = '';
+    if (preview) {
+        preview.remove();
+    }
+}
+</script>
+@endpush
+@endonce
+
+@php
+function html_attributes($attributes) {
+    $html = [];
+    foreach ($attributes as $key => $value) {
+        if (is_bool($value)) {
+            if ($value) {
+                $html[] = $key;
+            }
+        } elseif ($value !== null && $value !== '') {
+            $html[] = $key . '="' . htmlspecialchars($value, ENT_QUOTES) . '"';
+        }
+    }
+    return implode(' ', $html);
+}
+@endphp

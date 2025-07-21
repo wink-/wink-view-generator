@@ -1,0 +1,200 @@
+@props([
+    'id',
+    'title' => '',
+    'size' => 'md', // sm, md, lg, xl, 2xl
+    'closable' => true,
+    'backdrop' => true,
+    'static' => false,
+    'centered' => true,
+    'scrollable' => false,
+    'class' => ''
+])
+
+@php
+    $sizeClasses = [
+        'sm' => 'max-w-sm',
+        'md' => 'max-w-md',
+        'lg' => 'max-w-lg',
+        'xl' => 'max-w-xl',
+        '2xl' => 'max-w-2xl',
+        '3xl' => 'max-w-3xl',
+        '4xl' => 'max-w-4xl',
+        '5xl' => 'max-w-5xl',
+        '6xl' => 'max-w-6xl',
+        '7xl' => 'max-w-7xl',
+        'full' => 'max-w-full'
+    ];
+    
+    $modalClass = $sizeClasses[$size] ?? $sizeClasses['md'];
+@endphp
+
+<!-- Modal Overlay -->
+<div class="fixed inset-0 z-50 overflow-y-auto hidden" 
+     id="{{ $id }}" 
+     aria-labelledby="{{ $id }}-title" 
+     role="dialog" 
+     aria-modal="true"
+     {{ $attributes }}>
+    
+    <!-- Modal Container -->
+    <div class="flex items-{{ $centered ? 'center' : 'start' }} justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        
+        <!-- Backdrop -->
+        @if($backdrop)
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+                 aria-hidden="true"
+                 onclick="{{ $static ? '' : 'closeModal(\'' . $id . '\')' }}"></div>
+        @endif
+        
+        <!-- This element is to trick the browser into centering the modal contents. -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <!-- Modal Panel -->
+        <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle {{ $modalClass }} sm:w-full sm:p-6 {{ $class }}">
+            
+            <!-- Modal Header -->
+            @if($title || $closable)
+                <div class="flex items-center justify-between {{ $title ? 'mb-4' : '' }}">
+                    @if($title)
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="{{ $id }}-title">
+                            {{ $title }}
+                        </h3>
+                    @endif
+                    
+                    @if($closable)
+                        <button type="button" 
+                                class="{{ $title ? '' : 'ml-auto' }} bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
+                                onclick="closeModal('{{ $id }}')">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    @endif
+                </div>
+            @endif
+            
+            <!-- Modal Body -->
+            <div class="{{ $scrollable ? 'max-h-96 overflow-y-auto' : '' }}">
+                {{ $slot }}
+            </div>
+            
+            <!-- Modal Footer -->
+            @isset($footer)
+                <div class="mt-5 sm:mt-6 flex flex-col sm:flex-row-reverse gap-3">
+                    {{ $footer }}
+                </div>
+            @endisset
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+// Modal functions
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        
+        // Focus management
+        const firstFocusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) {
+            firstFocusable.focus();
+        }
+        
+        // Trap focus within modal
+        trapFocus(modal);
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        
+        // Remove focus trap
+        removeFocusTrap(modal);
+        
+        // Dispatch close event
+        modal.dispatchEvent(new CustomEvent('modal:closed', { detail: { modalId } }));
+    }
+}
+
+function toggleModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        if (modal.classList.contains('hidden')) {
+            showModal(modalId);
+        } else {
+            closeModal(modalId);
+        }
+    }
+}
+
+// Focus trap functionality
+function trapFocus(modal) {
+    const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    function handleTabKey(e) {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        }
+        
+        if (e.key === 'Escape') {
+            closeModal(modal.id);
+        }
+    }
+    
+    modal.addEventListener('keydown', handleTabKey);
+    modal._handleTabKey = handleTabKey; // Store reference for removal
+}
+
+function removeFocusTrap(modal) {
+    if (modal._handleTabKey) {
+        modal.removeEventListener('keydown', modal._handleTabKey);
+        delete modal._handleTabKey;
+    }
+}
+
+// Initialize modals on DOM load
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle escape key for all modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('[role="dialog"]:not(.hidden)');
+            if (openModals.length > 0) {
+                const lastModal = openModals[openModals.length - 1];
+                closeModal(lastModal.id);
+            }
+        }
+    });
+    
+    // Auto-close modals when clicking outside (for non-static modals)
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('[role="dialog"] > div:first-child')) {
+            const modal = e.target.closest('[role="dialog"]');
+            if (modal && !modal.hasAttribute('data-static')) {
+                closeModal(modal.id);
+            }
+        }
+    });
+});
+</script>
+@endpush
