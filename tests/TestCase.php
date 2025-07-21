@@ -19,12 +19,12 @@ abstract class TestCase extends BaseTestCase
     /**
      * The test files directory
      */
-    protected string $testFilesPath;
+    protected string $testFilesPath = '';
 
     /**
      * The test views directory  
      */
-    protected string $testViewsPath;
+    protected string $testViewsPath = '';
 
     /**
      * Setup the test environment

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands;
 
 use Illuminate\Console\Command;
@@ -41,7 +43,7 @@ class GenerateTablesCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('📊 Data Table Generator');
         $this->line('─────────────────────');
@@ -50,18 +52,18 @@ class GenerateTablesCommand extends Command
 
         // Validate table exists
         if (!$this->validateTable($table)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate framework
         $framework = $this->option('framework');
         if (!$this->validateFramework($framework)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate views directory
         if (!$this->validateViewsDirectory()) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Gather options
@@ -74,7 +76,7 @@ class GenerateTablesCommand extends Command
 
         if (empty($modelData['columns'])) {
             $this->error("No columns found in table '{$table}'");
-            return 1;
+            return Command::FAILURE;
         }
 
         // Analyze fields for table display
@@ -88,7 +90,7 @@ class GenerateTablesCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->showTableDryRun($table, $filesToGenerate, $tableColumns, $options);
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->showGenerationSummary($filesToGenerate, $options);
@@ -107,7 +109,7 @@ class GenerateTablesCommand extends Command
         if (!empty($existingFiles) && !$this->option('force')) {
             if (!$this->confirmOverwrite($existingFiles)) {
                 $this->info('Generation cancelled.');
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -136,7 +138,7 @@ class GenerateTablesCommand extends Command
         // Show table usage information
         $this->displayTableUsage($table, $tableColumns, $options);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

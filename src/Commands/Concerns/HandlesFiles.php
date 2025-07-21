@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands\Concerns;
 
 use Illuminate\Support\Facades\File;

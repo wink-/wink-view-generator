@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands;
 
 use Illuminate\Console\Command;
@@ -40,7 +42,7 @@ class GenerateFormsCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('📝 Form Generator');
         $this->line('─────────────────');
@@ -49,18 +51,18 @@ class GenerateFormsCommand extends Command
 
         // Validate table exists
         if (!$this->validateTable($table)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate framework
         $framework = $this->option('framework');
         if (!$this->validateFramework($framework)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate views directory
         if (!$this->validateViewsDirectory()) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Gather options
@@ -73,7 +75,7 @@ class GenerateFormsCommand extends Command
 
         if (empty($modelData['columns'])) {
             $this->error("No columns found in table '{$table}'");
-            return 1;
+            return Command::FAILURE;
         }
 
         // Analyze fields for form generation
@@ -87,7 +89,7 @@ class GenerateFormsCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->showFormDryRun($table, $filesToGenerate, $formFields, $options);
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->showGenerationSummary($filesToGenerate, $options);
@@ -106,7 +108,7 @@ class GenerateFormsCommand extends Command
         if (!empty($existingFiles) && !$this->option('force')) {
             if (!$this->confirmOverwrite($existingFiles)) {
                 $this->info('Generation cancelled.');
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -129,7 +131,7 @@ class GenerateFormsCommand extends Command
         // Show form usage information
         $this->displayFormUsage($table, $formFields, $options);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

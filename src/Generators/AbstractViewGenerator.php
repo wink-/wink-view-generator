@@ -14,8 +14,14 @@ abstract class AbstractViewGenerator
      */
     protected function getTemplatePath(string $framework, string $type, string $template): string
     {
-        $basePath = __DIR__ . '/../Templates';
-        return "{$basePath}/{$framework}/{$type}/{$template}.stub";
+        // Find the package root directory by looking for composer.json
+        $currentDir = __DIR__;
+        while ($currentDir !== '/' && !file_exists($currentDir . '/composer.json')) {
+            $currentDir = dirname($currentDir);
+        }
+        
+        $basePath = $currentDir . '/resources/stubs';
+        return "{$basePath}/{$framework}/{$type}/{$template}";
     }
 
     /**

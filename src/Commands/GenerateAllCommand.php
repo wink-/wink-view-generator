@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands;
 
 use Illuminate\Console\Command;
@@ -36,7 +38,7 @@ class GenerateAllCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🚀 Generate All Views');
         $this->line('─────────────────────');
@@ -44,12 +46,12 @@ class GenerateAllCommand extends Command
         // Validate framework
         $framework = $this->option('framework');
         if (!$this->validateFramework($framework)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate views directory
         if (!$this->validateViewsDirectory()) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Get tables to process
@@ -57,7 +59,7 @@ class GenerateAllCommand extends Command
         
         if (empty($tables)) {
             $this->error('No tables found to process.');
-            return 1;
+            return Command::FAILURE;
         }
 
         // Gather options
@@ -66,7 +68,7 @@ class GenerateAllCommand extends Command
         // Show generation plan
         if ($this->option('dry-run')) {
             $this->showGenerationPlan($tables, $options);
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->info("Processing " . count($tables) . " tables...");
@@ -76,7 +78,7 @@ class GenerateAllCommand extends Command
         if (count($tables) > 5 && !$this->option('force')) {
             if (!$this->confirm("This will generate views for " . count($tables) . " tables. Continue?", true)) {
                 $this->info('Generation cancelled.');
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -132,7 +134,7 @@ class GenerateAllCommand extends Command
         // Show next steps
         $this->displayNextSteps($tables, $options);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

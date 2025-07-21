@@ -51,7 +51,12 @@ class AbstractViewGeneratorTest extends TestCase
     {
         $templatePath = $this->generator->testGetTemplatePath('bootstrap', 'crud', 'index.blade.php');
         
-        $expectedPath = __DIR__ . '/../../../src/Templates/bootstrap/crud/index.blade.php.stub';
+        // Find the package root directory by looking for composer.json
+        $currentDir = __DIR__;
+        while ($currentDir !== '/' && !file_exists($currentDir . '/composer.json')) {
+            $currentDir = dirname($currentDir);
+        }
+        $expectedPath = $currentDir . '/resources/stubs/bootstrap/crud/index.blade.php';
         $this->assertEquals($expectedPath, $templatePath);
     }
 
@@ -67,7 +72,12 @@ class AbstractViewGeneratorTest extends TestCase
         foreach ($testCases as [$framework, $type, $template]) {
             $templatePath = $this->generator->testGetTemplatePath($framework, $type, $template);
             
-            $expectedPath = __DIR__ . "/../../../src/Templates/{$framework}/{$type}/{$template}.stub";
+            // Find the package root directory by looking for composer.json
+            $currentDir = __DIR__;
+            while ($currentDir !== '/' && !file_exists($currentDir . '/composer.json')) {
+                $currentDir = dirname($currentDir);
+            }
+            $expectedPath = $currentDir . "/resources/stubs/{$framework}/{$type}/{$template}";
             $this->assertEquals($expectedPath, $templatePath);
         }
     }

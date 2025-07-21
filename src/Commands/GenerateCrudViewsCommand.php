@@ -20,6 +20,6 @@ class GenerateCrudViewsCommand extends Command
         $this->info('Wink View Generator - CRUD Views Command');
         $this->comment('This command will be implemented in the next iteration.');
         
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }

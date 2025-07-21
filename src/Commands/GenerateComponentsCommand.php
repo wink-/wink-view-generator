@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands;
 
 use Illuminate\Console\Command;
@@ -39,7 +41,7 @@ class GenerateComponentsCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🧩 Component Generator');
         $this->line('───────────────────');
@@ -48,18 +50,18 @@ class GenerateComponentsCommand extends Command
         
         // Validate table if provided
         if ($table && !$this->validateTable($table)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate framework
         $framework = $this->option('framework');
         if (!$this->validateFramework($framework)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate views directory
         if (!$this->validateViewsDirectory()) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Gather options
@@ -70,7 +72,7 @@ class GenerateComponentsCommand extends Command
 
         if (empty($componentTypes)) {
             $this->error('No component types selected. Use --all or specify individual component flags.');
-            return 1;
+            return Command::FAILURE;
         }
 
         // Analyze model/table if provided
@@ -86,7 +88,7 @@ class GenerateComponentsCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->showComponentDryRun($componentTypes, $filesToGenerate, $options);
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->showGenerationSummary($filesToGenerate, $options);
@@ -105,7 +107,7 @@ class GenerateComponentsCommand extends Command
         if (!empty($existingFiles) && !$this->option('force')) {
             if (!$this->confirmOverwrite($existingFiles)) {
                 $this->info('Generation cancelled.');
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -137,7 +139,7 @@ class GenerateComponentsCommand extends Command
         // Show usage examples
         $this->displayComponentUsage($componentTypes, $options);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

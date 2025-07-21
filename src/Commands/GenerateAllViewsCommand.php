@@ -16,6 +16,6 @@ class GenerateAllViewsCommand extends Command
         $this->info('Wink View Generator - GenerateAllViewsCommand');
         $this->comment('This command will be implemented in the next iteration.');
         
-        return self::SUCCESS;
+        return Command::SUCCESS;
     }
 }

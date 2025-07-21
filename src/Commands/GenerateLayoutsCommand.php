@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Wink\ViewGenerator\Commands;
 
 use Illuminate\Console\Command;
@@ -37,7 +39,7 @@ class GenerateLayoutsCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $this->info('🏗️ Layout Generator');
         $this->line('──────────────────');
@@ -45,12 +47,12 @@ class GenerateLayoutsCommand extends Command
         // Validate framework
         $framework = $this->option('framework');
         if (!$this->validateFramework($framework)) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Validate views directory
         if (!$this->validateViewsDirectory()) {
-            return 1;
+            return Command::FAILURE;
         }
 
         // Gather options
@@ -61,7 +63,7 @@ class GenerateLayoutsCommand extends Command
 
         if (empty($layoutTypes)) {
             $this->error('No layout types selected. Use --all or specify individual layout flags.');
-            return 1;
+            return Command::FAILURE;
         }
 
         // Show what will be generated
@@ -69,7 +71,7 @@ class GenerateLayoutsCommand extends Command
 
         if ($this->option('dry-run')) {
             $this->showLayoutDryRun($layoutTypes, $filesToGenerate, $options);
-            return 0;
+            return Command::SUCCESS;
         }
 
         $this->showGenerationSummary($filesToGenerate, $options);
@@ -88,7 +90,7 @@ class GenerateLayoutsCommand extends Command
         if (!empty($existingFiles) && !$this->option('force')) {
             if (!$this->confirmOverwrite($existingFiles)) {
                 $this->info('Generation cancelled.');
-                return 0;
+                return Command::SUCCESS;
             }
         }
 
@@ -120,7 +122,7 @@ class GenerateLayoutsCommand extends Command
         // Show layout usage information
         $this->displayLayoutUsage($layoutTypes, $options);
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**

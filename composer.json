@@ -21,16 +21,15 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/support": "^10.0|^11.0",
-        "illuminate/view": "^10.0|^11.0",
-        "illuminate/console": "^10.0|^11.0",
-        "illuminate/filesystem": "^10.0|^11.0",
-        "wink/generator-core": "^1.0"
+        "php": "^8.3",
+        "illuminate/support": "^12.0",
+        "illuminate/view": "^12.0",
+        "illuminate/console": "^12.0",
+        "illuminate/filesystem": "^12.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0",
-        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^11.5",
+        "orchestra/testbench": "^10.0",
         "mockery/mockery": "^1.5",
         "phpstan/phpstan": "^1.10",
         "laravel/pint": "^1.0",
